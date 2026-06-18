@@ -1,0 +1,74 @@
+{
+  "steps": [
+    {
+      "name": "d-login-dashboard",
+      "ok": true,
+      "shot": "31-d-login-dashboard.png"
+    },
+    {
+      "name": "d-appointments",
+      "ok": true,
+      "shot": "32-d-appointments.png"
+    },
+    {
+      "name": "d-book-dialog",
+      "ok": true,
+      "shot": "33-d-book-dialog.png"
+    },
+    {
+      "name": "d-book-403",
+      "ok": true,
+      "shot": "34-d-book-403.png"
+    },
+    {
+      "name": "d-reschedule-403",
+      "ok": true,
+      "shot": "35-d-reschedule-403.png"
+    },
+    {
+      "name": "d-mark-delay",
+      "ok": true,
+      "shot": "36-d-mark-delay.png"
+    },
+    {
+      "name": "d-schedule",
+      "ok": true,
+      "shot": "37-d-schedule.png"
+    },
+    {
+      "name": "d-schedule-add",
+      "ok": true,
+      "shot": "38-d-schedule-add.png"
+    },
+    {
+      "name": "d-schedule-toggle-403",
+      "ok": true,
+      "shot": "39-d-schedule-toggle-403.png"
+    },
+    {
+      "name": "d-settings-add-service",
+      "ok": true,
+      "shot": "40-d-settings-add-service.png"
+    },
+    {
+      "name": "d-calendar",
+      "ok": true,
+      "shot": "41-d-calendar.png"
+    }
+  ],
+  "toasts": {
+    "book": "Receptionist or Admin role required to book.",
+    "reschedule": "Receptionist or Admin role required.",
+    "delay": "Delay recorded — the patient will be notified.",
+    "scheduleAdd": "Schedule slot created",
+    "scheduleToggle": "Admin role required.",
+    "serviceAdd": "Service added"
+  },
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  ],
+  "pageErrors": []
+}

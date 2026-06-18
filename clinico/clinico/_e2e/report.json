@@ -1,0 +1,231 @@
+{
+  "steps": [
+    {
+      "name": "landing",
+      "ok": true,
+      "shot": "01-landing.png"
+    },
+    {
+      "name": "register-form",
+      "ok": true,
+      "shot": "02-register-form.png"
+    },
+    {
+      "name": "register-submitted-dashboard",
+      "ok": true,
+      "shot": "03-register-submitted-dashboard.png"
+    },
+    {
+      "name": "login-form",
+      "ok": true,
+      "shot": "04-login-form.png"
+    },
+    {
+      "name": "patient-dashboard",
+      "ok": true,
+      "shot": "05-patient-dashboard.png"
+    },
+    {
+      "name": "patient-appointments",
+      "ok": true,
+      "shot": "06-patient-appointments.png"
+    },
+    {
+      "name": "patient-cancel-appointment",
+      "ok": true,
+      "shot": "07-patient-cancel-appointment.png"
+    },
+    {
+      "name": "patient-medical-records",
+      "ok": true,
+      "shot": "08-patient-medical-records.png"
+    },
+    {
+      "name": "patient-profile",
+      "ok": true,
+      "shot": "09-patient-profile.png"
+    },
+    {
+      "name": "doctor-login",
+      "ok": false,
+      "error": "TimeoutError: Waiting failed: 20000ms exceeded",
+      "shot": "10-FAIL-doctor-login.png"
+    },
+    {
+      "name": "doctor-appointments",
+      "ok": false,
+      "error": "TimeoutError: Waiting failed: 10000ms exceeded",
+      "shot": "11-FAIL-doctor-appointments.png"
+    },
+    {
+      "name": "doctor-book-dialog",
+      "ok": false,
+      "error": "TimeoutError: Waiting for selector `div[role=\"dialog\"]` failed",
+      "shot": "12-FAIL-doctor-book-dialog.png"
+    },
+    {
+      "name": "doctor-book-submit-403",
+      "ok": false,
+      "error": "Error: No element found for selector: div[role=\"dialog\"] button[type=\"submit\"]",
+      "shot": "13-FAIL-doctor-book-submit-403.png"
+    },
+    {
+      "name": "doctor-confirm-403",
+      "ok": false,
+      "error": "TimeoutError: Waiting failed: 10000ms exceeded",
+      "shot": "14-FAIL-doctor-confirm-403.png"
+    },
+    {
+      "name": "doctor-mark-delay",
+      "ok": false,
+      "error": "TimeoutError: Waiting failed: 10000ms exceeded",
+      "shot": "15-FAIL-doctor-mark-delay.png"
+    },
+    {
+      "name": "doctor-schedule",
+      "ok": false,
+      "error": "TimeoutError: Waiting failed: 10000ms exceeded",
+      "shot": "16-FAIL-doctor-schedule.png"
+    },
+    {
+      "name": "doctor-schedule-add",
+      "ok": false,
+      "error": "TimeoutError: Waiting for selector `div[role=\"dialog\"]` failed",
+      "shot": "17-FAIL-doctor-schedule-add.png"
+    },
+    {
+      "name": "doctor-schedule-toggle-403",
+      "ok": true,
+      "shot": "18-doctor-schedule-toggle-403.png"
+    },
+    {
+      "name": "doctor-settings",
+      "ok": false,
+      "error": "TimeoutError: Waiting failed: 10000ms exceeded",
+      "shot": "19-FAIL-doctor-settings.png"
+    },
+    {
+      "name": "doctor-calendar",
+      "ok": false,
+      "error": "TimeoutError: Waiting failed: 10000ms exceeded",
+      "shot": "20-FAIL-doctor-calendar.png"
+    },
+    {
+      "name": "landing-dark",
+      "ok": true,
+      "shot": "21-landing-dark.png"
+    }
+  ],
+  "toasts": {
+    "patientCancel": "Appointment cancelled",
+    "patientProfile": "Profile updated"
+  },
+  "consoleErrors": [
+    {
+      "url": "http://localhost:3000/",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "url": "http://localhost:3000/",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "pageErrors": [],
+  "failedRequests": [
+    {
+      "url": "http://localhost:3000/patient/dashboard?_rsc=82ger",
+      "method": "GET",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/patient/dashboard?_rsc=128f9",
+      "method": "GET",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/patient/appointments?_rsc=128f9",
+      "method": "GET",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/patient/medical-records?_rsc=128f9",
+      "method": "GET",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/patient/profile?_rsc=128f9",
+      "method": "GET",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/patient/dashboard?_rsc=970e3",
+      "method": "GET",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/patient/dashboard?_rsc=128f9",
+      "method": "GET",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/patient/profile?_rsc=128f9",
+      "method": "GET",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/patient/medical-records?_rsc=128f9",
+      "method": "GET",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/patient/appointments?_rsc=128f9",
+      "method": "GET",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/patient/medical-records?_rsc=s3nq1",
+      "method": "GET",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/patient/dashboard?_rsc=s3nq1",
+      "method": "GET",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:5098/api/Appointments/103/cancel",
+      "method": "PATCH",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/patient/appointments?_rsc=9qnfz",
+      "method": "GET",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/patient/dashboard?_rsc=9qnfz",
+      "method": "GET",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/patient/dashboard?_rsc=ln0yv",
+      "method": "GET",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/patient/appointments?_rsc=ln0yv",
+      "method": "GET",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/patient/medical-records?_rsc=ln0yv",
+      "method": "GET",
+      "err": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:5098/api/Users/profile",
+      "method": "PUT",
+      "err": "net::ERR_ABORTED"
+    }
+  ]
+}

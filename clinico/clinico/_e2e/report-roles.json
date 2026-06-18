@@ -1,0 +1,20 @@
+{
+  "receptionist": {
+    "hasBookButton": true,
+    "bookToast": "Appointment booked successfully",
+    "rowButtons": [
+      "Reschedule"
+    ]
+  },
+  "doctor": {
+    "hasBookButton": false,
+    "rowButtons": [
+      "Delay"
+    ],
+    "scheduleAvailabilityCol": [
+      "—",
+      "—"
+    ],
+    "hasAddSchedule": true
+  }
+}
