@@ -24,11 +24,16 @@ public class MappingProfiles : Profile
 
         // ── Schedule ──────────────────────────────────────────────
         CreateMap<Schedule, ScheduleDto>()
-            .ForMember(d => d.DentistName, o => o.MapFrom(s => s.Dentist.FullName))
-            .ForMember(d => d.DayOfWeek,   o => o.MapFrom(s => s.DayOfWeek.ToString()))
-            .ForMember(d => d.StartTime,   o => o.MapFrom(s => s.StartTime.ToString("HH:mm")))
-            .ForMember(d => d.EndTime,     o => o.MapFrom(s => s.EndTime.ToString("HH:mm")))
-            .ForMember(d => d.Date,        o => o.MapFrom(s => s.Date.ToString("yyyy-MM-dd")));
+            .ConstructUsing(s => new ScheduleDto(
+                s.Id,
+                s.DentistId,
+                s.Dentist != null ? s.Dentist.FullName : null,
+                s.DayOfWeek.ToString(),
+                s.StartTime.ToString("HH:mm"),
+                s.EndTime.ToString("HH:mm"),
+                s.IsAvailable,
+                s.Date.ToString("yyyy-MM-dd")
+            ));
 
         // ── Appointment ───────────────────────────────────────────
         CreateMap<Appointment, AppointmentDto>()

@@ -108,7 +108,7 @@ export default function DoctorSchedulePage() {
               ) : (
                 schedules.map((schedule) => (
                   <TableRow key={schedule.id}>
-                    <TableCell>{format(parseISO(schedule.date), "MMM d, yyyy")}</TableCell>
+                    <TableCell>{format(schedule.date, "MMM d, yyyy")}</TableCell>
                     <TableCell>{schedule.dayOfWeek}</TableCell>
                     <TableCell>{schedule.startTime}</TableCell>
                     <TableCell>{schedule.endTime}</TableCell>
