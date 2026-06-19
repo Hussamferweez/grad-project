@@ -32,12 +32,24 @@ public class MappingProfiles : Profile
 
         // ── Appointment ───────────────────────────────────────────
         CreateMap<Appointment, AppointmentDto>()
-            .ForMember(d => d.PatientName,       o => o.MapFrom(s => s.Patient.FullName))
-            .ForMember(d => d.DentistName,       o => o.MapFrom(s => s.Dentist.FullName))
-            .ForMember(d => d.AppointmentDate,   o => o.MapFrom(s => s.AppointmentDate.ToString("yyyy-MM-dd")))
-            .ForMember(d => d.AppointmentTime,   o => o.MapFrom(s => s.AppointmentTime.ToString("HH:mm")))
-            .ForMember(d => d.Status,            o => o.MapFrom(s => s.Status.ToString()))
-            .ForMember(d => d.EstimatedEndTime,  o => o.MapFrom(s => s.EstimatedEndTime.ToString("HH:mm")));
+            .ConstructUsing(s => new AppointmentDto(
+                s.Id,
+                s.PatientId,
+                s.Patient != null ? s.Patient.FullName : null,
+                s.DentistId,
+                s.Dentist != null ? s.Dentist.FullName : null,
+                s.AppointmentDate.ToString("yyyy-MM-dd"),
+                s.AppointmentTime.ToString("HH:mm"),
+                s.DurationMinutes,
+                s.Service != null ? s.Service.Name : null,
+                s.Status.ToString(),
+                s.TreatmentNotes,
+                s.DelayReason,
+                s.DelayDurationMinutes,
+                s.EstimatedEndTime.ToString("HH:mm"),
+                s.CreatedAt,
+                s.UpdatedAt
+            ));
 
         // ── SmsNotification ───────────────────────────────────────
         CreateMap<SmsNotification, SmsNotificationDto>()

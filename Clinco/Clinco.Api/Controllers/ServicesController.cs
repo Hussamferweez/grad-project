@@ -1,3 +1,4 @@
+using API.Controllers;
 using Clinco.Application.Commands;
 using Clinco.Shared.Abstractions.Commands;
 using Domain.Entities;
@@ -8,8 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Clinco.Api.Controllers;
 
 public class ServicesController(
-    ICommandDispatcher commandDispatcher,
-    IServiceRepository serviceRepository) : BaseController
+    IServiceRepository serviceRepository) : BaseApiController
 {
     [Authorize]
     [HttpGet]
@@ -23,7 +23,7 @@ public class ServicesController(
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] CreateService command)
     {
-        await commandDispatcher.DispatchAsync(command);
+        var result = await Mediator.Send(command);
         return Ok();
     }
 }

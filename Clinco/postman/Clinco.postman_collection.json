@@ -1,0 +1,889 @@
+{
+  "info": {
+    "_postman_id": "clinco-api-collection-v1",
+    "name": "Clinco API",
+    "description": "Dental clinic management REST API (.NET 9).\n\n**Setup:** Import `Clinco-Local.postman_environment.json`, start the API (`dotnet run --project Clinco.Api`), then run requests in order.\n\n**Demo password for all seeded accounts:** `Password1`\n\n**Seeded IDs (fresh database):**\n- Admin: 1 | Doctor: 2 | Receptionist: 3 | Patient: 4\n- Services: 1–4 (Cleaning, Root Canal, Whitening, General Checkup)\n- Roles: 1=Admin, 2=Doctor, 3=Receptionist, 4=Patient",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5098" },
+    { "key": "accessToken", "value": "" },
+    { "key": "userId", "value": "3" },
+    { "key": "adminId", "value": "1" },
+    { "key": "dentistId", "value": "2" },
+    { "key": "receptionistId", "value": "3" },
+    { "key": "patientId", "value": "4" },
+    { "key": "serviceId", "value": "1" },
+    { "key": "appointmentId", "value": "1" },
+    { "key": "scheduleId", "value": "1" },
+    { "key": "appointmentDate", "value": "2026-06-25" },
+    { "key": "appointmentTime", "value": "10:00" }
+  ],
+  "item": [
+    {
+      "name": "01 - Auth",
+      "description": "No authentication required. Login requests auto-save `accessToken` and `userId` to collection variables.",
+      "item": [
+        {
+          "name": "Login - Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data?.accessToken) {",
+                  "        pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "        pm.collectionVariables.set('userId', json.data.userId);",
+                  "    }",
+                  "    pm.test('Login succeeded', () => pm.expect(json.succeeded).to.be.true);",
+                  "    pm.test('Role is Admin', () => pm.expect(json.data.role).to.eql('Admin'));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"admin@clinico.com\",\n  \"password\": \"Password1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Auth/login"
+          }
+        },
+        {
+          "name": "Login - Doctor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data?.accessToken) {",
+                  "        pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "        pm.collectionVariables.set('userId', json.data.userId);",
+                  "    }",
+                  "    pm.test('Login succeeded', () => pm.expect(json.succeeded).to.be.true);",
+                  "    pm.test('Role is Doctor', () => pm.expect(json.data.role).to.eql('Doctor'));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"doctor@clinico.com\",\n  \"password\": \"Password1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Auth/login"
+          }
+        },
+        {
+          "name": "Login - Receptionist",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data?.accessToken) {",
+                  "        pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "        pm.collectionVariables.set('userId', json.data.userId);",
+                  "    }",
+                  "    pm.test('Login succeeded', () => pm.expect(json.succeeded).to.be.true);",
+                  "    pm.test('Role is Receptionist', () => pm.expect(json.data.role).to.eql('Receptionist'));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"reception@clinico.com\",\n  \"password\": \"Password1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Auth/login"
+          }
+        },
+        {
+          "name": "Login - Patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data?.accessToken) {",
+                  "        pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "        pm.collectionVariables.set('userId', json.data.userId);",
+                  "    }",
+                  "    pm.test('Login succeeded', () => pm.expect(json.succeeded).to.be.true);",
+                  "    pm.test('Role is Patient', () => pm.expect(json.data.role).to.eql('Patient'));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"patient@clinico.com\",\n  \"password\": \"Password1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Auth/login"
+          }
+        },
+        {
+          "name": "Login - Patient (by phone)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data?.accessToken) {",
+                  "        pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "        pm.collectionVariables.set('userId', json.data.userId);",
+                  "    }",
+                  "    pm.test('Login succeeded', () => pm.expect(json.succeeded).to.be.true);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"+201000000002\",\n  \"password\": \"Password1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Auth/login"
+          }
+        },
+        {
+          "name": "Register - New Patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data?.accessToken) {",
+                  "        pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "        pm.collectionVariables.set('userId', json.data.userId);",
+                  "    }",
+                  "    pm.test('Registration succeeded', () => pm.expect(json.succeeded).to.be.true);",
+                  "    pm.test('Role is Patient', () => pm.expect(json.data.role).to.eql('Patient'));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"johndoe\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe.{{$timestamp}}@example.com\",\n  \"phoneNumber\": \"+201234567890\",\n  \"password\": \"Password1\",\n  \"dateOfBirth\": \"1990-05-15\",\n  \"address\": \"123 Main St, Cairo\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Auth/register"
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Services",
+      "description": "Requires any authenticated user. GET returns raw array (no ApiResponse wrapper).",
+      "item": [
+        {
+          "name": "Get All Services",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const services = pm.response.json();",
+                  "if (Array.isArray(services) && services.length > 0) {",
+                  "    pm.collectionVariables.set('serviceId', services[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/Services"
+          }
+        },
+        {
+          "name": "Create Service",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Filling\",\n  \"approximateDurationMinutes\": 45\n}"
+            },
+            "url": "{{baseUrl}}/api/Services"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Users",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/Users/profile"
+          }
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Mona\",\n  \"lastName\": \"Ali\",\n  \"phoneNumber\": \"+201000000002\",\n  \"address\": \"Cairo, Egypt\",\n  \"emergencyContact\": \"+201099999999\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Users/profile"
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Password1\",\n  \"newPassword\": \"NewPassword1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Users/change-password"
+          }
+        },
+        {
+          "name": "Get All Users (Admin)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/Users"
+          }
+        },
+        {
+          "name": "Get User By ID (Admin)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/Users/{{patientId}}"
+          }
+        },
+        {
+          "name": "Get Users By Role ID (Admin)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/Users/by-role/2"
+          }
+        },
+        {
+          "name": "Get Users By Role Name - Doctor (ClinicStaff)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data?.length > 0) {",
+                  "        pm.collectionVariables.set('dentistId', json.data[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/Users/role/Doctor"
+          }
+        },
+        {
+          "name": "Get Users By Role Name - Patient (ClinicStaff)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data?.length > 0) {",
+                  "        pm.collectionVariables.set('patientId', json.data[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/Users/role/Patient"
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Schedules",
+      "item": [
+        {
+          "name": "Create Schedule (Doctor/Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data?.id) {",
+                  "        pm.collectionVariables.set('scheduleId', json.data.id);",
+                  "    }",
+                  "    pm.test('Schedule created', () => pm.expect(json.succeeded).to.be.true);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dentistId\": {{dentistId}},\n  \"dayOfWeek\": \"Monday\",\n  \"startTime\": \"09:00\",\n  \"endTime\": \"17:00\",\n  \"date\": \"{{appointmentDate}}\",\n  \"isAvailable\": true\n}"
+            },
+            "url": "{{baseUrl}}/api/Schedules"
+          }
+        },
+        {
+          "name": "Get Schedules By Dentist",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/Schedules/dentist/{{dentistId}}?from={{appointmentDate}}&to={{appointmentDate}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Schedules", "dentist", "{{dentistId}}"],
+              "query": [
+                { "key": "from", "value": "{{appointmentDate}}" },
+                { "key": "to", "value": "{{appointmentDate}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Available Schedules",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/Schedules/available?from={{appointmentDate}}&to={{appointmentDate}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Schedules", "available"],
+              "query": [
+                { "key": "from", "value": "{{appointmentDate}}" },
+                { "key": "to", "value": "{{appointmentDate}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Schedule Availability (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isAvailable\": true\n}"
+            },
+            "url": "{{baseUrl}}/api/Schedules/{{scheduleId}}/availability"
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Appointments",
+      "description": "Book requires Receptionist or Admin token. Patient self-book endpoint is disabled in the API.",
+      "item": [
+        {
+          "name": "Book Appointment (Receptionist/Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data?.id) {",
+                  "        pm.collectionVariables.set('appointmentId', json.data.id);",
+                  "    }",
+                  "    pm.test('Appointment booked', () => pm.expect(json.succeeded).to.be.true);",
+                  "    pm.test('Status is Booked', () => pm.expect(json.data.status).to.eql('Booked'));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": {{patientId}},\n  \"dentistId\": {{dentistId}},\n  \"appointmentDate\": \"{{appointmentDate}}\",\n  \"appointmentTime\": \"{{appointmentTime}}\",\n  \"serviceId\": {{serviceId}},\n  \"createdBy\": {{receptionistId}},\n  \"scheduleId\": null\n}"
+            },
+            "url": "{{baseUrl}}/api/Appointments/manage/book"
+          }
+        },
+        {
+          "name": "Get Appointment By ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/Appointments/{{appointmentId}}"
+          }
+        },
+        {
+          "name": "Get My Appointments (Patient)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/Appointments/my"
+          }
+        },
+        {
+          "name": "Get Appointments By Patient (ClinicStaff)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/Appointments/patient/{{patientId}}"
+          }
+        },
+        {
+          "name": "Get Appointments By Date (ClinicStaff)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/Appointments/date/{{appointmentDate}}"
+          }
+        },
+        {
+          "name": "Get Appointments By Dentist (ClinicStaff)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/Appointments/dentist/{{dentistId}}?date={{appointmentDate}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Appointments", "dentist", "{{dentistId}}"],
+              "query": [{ "key": "date", "value": "{{appointmentDate}}" }]
+            }
+          }
+        },
+        {
+          "name": "Confirm Appointment (Receptionist/Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"confirm\",\n  \"newDate\": null,\n  \"newTime\": null,\n  \"serviceName\": null\n}"
+            },
+            "url": "{{baseUrl}}/api/Appointments/{{appointmentId}}"
+          }
+        },
+        {
+          "name": "Reschedule Appointment (Receptionist/Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"reschedule\",\n  \"newDate\": \"{{appointmentDate}}\",\n  \"newTime\": \"14:00\",\n  \"serviceName\": null\n}"
+            },
+            "url": "{{baseUrl}}/api/Appointments/{{appointmentId}}"
+          }
+        },
+        {
+          "name": "Complete Appointment (Receptionist/Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"complete\",\n  \"newDate\": null,\n  \"newTime\": null,\n  \"serviceName\": null\n}"
+            },
+            "url": "{{baseUrl}}/api/Appointments/{{appointmentId}}"
+          }
+        },
+        {
+          "name": "Cancel Appointment",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/Appointments/{{appointmentId}}/cancel"
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Delays",
+      "description": "Requires Doctor or Admin token.",
+      "item": [
+        {
+          "name": "Mark Delay on Appointment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Delay marked', () => pm.expect(json.succeeded).to.be.true);",
+                  "    pm.test('Status is Delayed', () => pm.expect(json.data.status).to.eql('Delayed'));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentId\": {{appointmentId}},\n  \"delayDurationMinutes\": 30,\n  \"reason\": \"Emergency procedure running late\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Delays"
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Notifications",
+      "item": [
+        {
+          "name": "Notify Patients of Delay (Receptionist/Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Notification accepted', () => pm.expect(json.succeeded).to.be.true);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"{{appointmentDate}}\",\n  \"delayMessage\": \"The clinic is running approximately 45 minutes behind schedule. We apologize for the inconvenience.\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Notifications/notify-delay"
+          }
+        },
+        {
+          "name": "Get Notifications By Appointment (ClinicStaff)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/Notifications/appointment/{{appointmentId}}"
+          }
+        },
+        {
+          "name": "Get Notifications By Patient (ClinicStaff)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/Notifications/patient/{{patientId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - E2E Happy Path (Run in order)",
+      "description": "Run this folder top-to-bottom with Collection Runner for a full workflow test.",
+      "item": [
+        {
+          "name": "Step 1 - Login Receptionist",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "pm.test('Login OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"reception@clinico.com\",\n  \"password\": \"Password1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Auth/login"
+          }
+        },
+        {
+          "name": "Step 2 - Get Services",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const services = pm.response.json();",
+                  "pm.collectionVariables.set('serviceId', services[0].id);",
+                  "pm.test('Services loaded', () => pm.expect(services.length).to.be.above(0));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/Services"
+          }
+        },
+        {
+          "name": "Step 3 - Book Appointment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('appointmentId', json.data.id);",
+                  "pm.test('Booked', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": {{patientId}},\n  \"dentistId\": {{dentistId}},\n  \"appointmentDate\": \"{{appointmentDate}}\",\n  \"appointmentTime\": \"{{appointmentTime}}\",\n  \"serviceId\": {{serviceId}},\n  \"createdBy\": {{receptionistId}},\n  \"scheduleId\": null\n}"
+            },
+            "url": "{{baseUrl}}/api/Appointments/manage/book"
+          }
+        },
+        {
+          "name": "Step 4 - Confirm Appointment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Confirmed', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"confirm\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Appointments/{{appointmentId}}"
+          }
+        },
+        {
+          "name": "Step 5 - Login Doctor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "pm.test('Doctor login OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"doctor@clinico.com\",\n  \"password\": \"Password1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Auth/login"
+          }
+        },
+        {
+          "name": "Step 6 - Mark Delay",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Delay marked', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentId\": {{appointmentId}},\n  \"delayDurationMinutes\": 30,\n  \"reason\": \"Complex procedure taking longer than expected\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Delays"
+          }
+        },
+        {
+          "name": "Step 7 - Login Receptionist (again)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "pm.test('Receptionist login OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"reception@clinico.com\",\n  \"password\": \"Password1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Auth/login"
+          }
+        },
+        {
+          "name": "Step 8 - Notify Patients of Delay",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Notifications queued', () => pm.response.to.have.status(202));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"{{appointmentDate}}\",\n  \"delayMessage\": \"The clinic is running 30 minutes behind schedule.\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Notifications/notify-delay"
+          }
+        },
+        {
+          "name": "Step 9 - Login Patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "pm.test('Patient login OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"patient@clinico.com\",\n  \"password\": \"Password1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Auth/login"
+          }
+        },
+        {
+          "name": "Step 10 - View My Appointments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('My appointments loaded', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/Appointments/my"
+          }
+        }
+      ]
+    }
+  ]
+}

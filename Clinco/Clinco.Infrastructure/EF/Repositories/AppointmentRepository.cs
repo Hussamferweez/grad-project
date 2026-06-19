@@ -49,7 +49,7 @@ internal sealed class AppointmentRepository(ClinicDbContext dbContext) : IAppoin
         DateOnly date,
         CancellationToken cancellationToken = default)
         => await dbContext.Appointments
-            .AsNoTracking()
+            .Include(x => x.Patient)
             .Where(x => x.DentistId == dentistId && x.AppointmentDate == date && !x.IsDeleted)
             .OrderBy(x => x.AppointmentTime)
             .ToListAsync(cancellationToken);

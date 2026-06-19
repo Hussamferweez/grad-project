@@ -26,7 +26,7 @@ public static class Extensions
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddHostedService<DataSeeder>();
-        services.AddHttpClient<ISmsGateway, HttpSmsGateway>();
+        services.AddScoped<ISmsGateway, HttpSmsGateway>();
         services.AddMediatR(cfg =>
             cfg.RegisterServicesFromAssemblies(
                 Assembly.GetExecutingAssembly(),

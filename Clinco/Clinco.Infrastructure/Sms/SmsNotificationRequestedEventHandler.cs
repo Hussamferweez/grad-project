@@ -21,19 +21,19 @@ internal sealed class SmsNotificationRequestedEventHandler(
 
         await smsNotificationRepository.CreateAsync(smsNotification, cancellationToken);
 
-        var sendResult = await smsGateway.SendAsync(
+        await smsGateway.SendAsync(
             notification.PhoneNumber,
             notification.MessageContent,
             cancellationToken);
 
-        if (sendResult.IsSuccess)
-        {
-            smsNotification.MarkSent(sendResult.ProviderMessageId ?? $"provider-{Guid.NewGuid():N}");
-        }
-        else
-        {
-            smsNotification.MarkFailed(sendResult.ErrorMessage ?? "Unknown SMS failure.");
-        }
+        //if (sendResult.IsSuccess)
+        //{
+        //    smsNotification.MarkSent(sendResult.ProviderMessageId ?? $"provider-{Guid.NewGuid():N}");
+        //}
+        //else
+        //{
+        //    smsNotification.MarkFailed(sendResult.ErrorMessage ?? "Unknown SMS failure.");
+        //}
 
     }
 }

@@ -18,7 +18,6 @@ public record BookAppointmentcmd(
     int PatientId,
     int DentistId,
     string AppointmentDate,
-    string AppointmentTime,
     int ServiceId,
     int CreatedBy,
     int? ScheduleId = null) : IRequest<AppointmentDto>;
@@ -35,9 +34,9 @@ public class BookAppointmentcmdValidator : AbstractValidator<BookAppointmentcmd>
             .Must(d => DateOnly.TryParse(d, out var date) && date >= DateOnly.FromDateTime(DateTime.UtcNow.Date))
             .WithMessage("Appointment date must be today or in the future.");
 
-        RuleFor(x => x.AppointmentTime)
-            .NotEmpty()
-            .Must(t => TimeOnly.TryParse(t, out _)).WithMessage("AppointmentTime must be in HH:mm format.");
+        //RuleFor(x => x.AppointmentTime)
+        //    .NotEmpty()
+        //    .Must(t => TimeOnly.TryParse(t, out _)).WithMessage("AppointmentTime must be in HH:mm format.");
 
     }
 }
@@ -45,6 +44,7 @@ public class BookAppointmentcmdValidator : AbstractValidator<BookAppointmentcmd>
 public class BookAppointmentcmdHandler : IRequestHandler<BookAppointmentcmd, AppointmentDto>
 {
     private readonly IAppointmentRepository _appointments;
+    private readonly IScheduleRepository _scheduleRepository;
     IServiceRepository _serviceRepository;
     private readonly IUserRepository _users;
     private readonly IUnitOfWork _uow;
@@ -54,6 +54,7 @@ public class BookAppointmentcmdHandler : IRequestHandler<BookAppointmentcmd, App
 
     public BookAppointmentcmdHandler(
         IAppointmentRepository appointments,
+        IScheduleRepository scheduleRepository,
         IUserRepository users,
         IUnitOfWork uow,
         IMapper mapper,
@@ -66,55 +67,73 @@ public class BookAppointmentcmdHandler : IRequestHandler<BookAppointmentcmd, App
         _mapper = mapper;
         _serviceRepository = serviceRepository;
         _publisher = publisher;
+        _scheduleRepository = scheduleRepository;
     }
 
     public async Task<AppointmentDto> Handle(BookAppointmentcmd cmd, CancellationToken ct)
     {
-        // Verify both users exist
         _ = await _users.GetByIdAsync(cmd.PatientId, ct)
             ?? throw new NotFoundException(nameof(User), cmd.PatientId);
+
         _ = await _users.GetByIdAsync(cmd.DentistId, ct)
             ?? throw new NotFoundException(nameof(User), cmd.DentistId);
 
         var date = DateOnly.Parse(cmd.AppointmentDate);
-        var time = TimeOnly.Parse(cmd.AppointmentTime);
 
-        // Check schedule conflict
-        var service = await _serviceRepository.GetByIdAsync(cmd.ServiceId, ct);
-        if (service is null)
-        {
-            throw new InvalidOperationException($"Service with id '{cmd.ServiceId}' was not found.");
-        }
+        var service = await _serviceRepository.GetByIdAsync(cmd.ServiceId, ct)
+            ?? throw new InvalidOperationException($"Service with id '{cmd.ServiceId}' was not found.");
 
-        var hasConflict = await _appointments.HasConflictAsync(
+        var schedule = await _scheduleRepository.GetByDentistAndDateAsync(
             cmd.DentistId,
             date,
-            time,
-            service.ApproximateDurationMinutes);
+            ct);
 
-        if (hasConflict)
+        if (schedule is null)
+            throw new InvalidOperationException("No schedule found for this dentist on the selected date.");
+
+        var slotStart = schedule.StartTime;
+        TimeOnly? availableSlot = null;
+
+        while (slotStart.AddMinutes(service.ApproximateDurationMinutes) <= schedule.EndTime)
         {
-            throw new InvalidOperationException("Appointment time conflicts with an existing appointment.");
+            var hasConflict = await _appointments.HasConflictAsync(
+                cmd.DentistId,
+                date,
+                slotStart,
+                service.ApproximateDurationMinutes);
+
+            if (!hasConflict)
+            {
+                availableSlot = slotStart;
+                break;
+            }
+
+            slotStart = slotStart.AddMinutes(15); // configurable
         }
+
+        if (availableSlot is null)
+            throw new InvalidOperationException("No available slots for this date.");
 
         var appointment = Appointment.Book(
             cmd.PatientId,
             cmd.DentistId,
             date,
-            time,
+            availableSlot.Value,
             service,
             cmd.CreatedBy,
-            cmd.ScheduleId);
+            schedule.Id);
 
         await _appointments.CreateAsync(appointment);
         await _uow.SaveChangesAsync();
+
         await _publisher.Publish(new SmsNotificationRequestedEvent(
             appointment.Id,
             appointment.PatientId,
             appointment.Patient.PhoneNumber,
-            "Appoinment Booked",
-            $"Dear {appointment.Patient.FullName}, your appointment has been Booked for {appointment.AppointmentTime}"));
-        // Reload with navigation props for mapping
+            "Appointment Booked",
+            $"Dear {appointment.Patient.FullName}, your appointment is at {availableSlot.Value}"
+        ));
+
         var created = await _appointments.GetByIdAsync(appointment.Id, ct);
         return _mapper.Map<AppointmentDto>(created!);
     }
