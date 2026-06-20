@@ -9,7 +9,7 @@ export default async function DoctorLayout({ children }: { children: ReactNode }
   const session = await getServerSession();
 
   if (!session) redirect("/login");
-  if (!isStaffRole(session.role)) redirect("/patient/dashboard");
+  if (!isStaffRole(session.role)) redirect("/login");
 
   return (
     <div className="min-h-screen bg-muted/20 lg:grid lg:grid-cols-[auto_1fr]">

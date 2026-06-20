@@ -9,8 +9,8 @@ export default function LoginPage() {
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
       <Card className="card-lift border-primary/15 shadow-xl shadow-primary/10">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">Sign In</CardTitle>
-          <CardDescription className="text-center">Welcome back to Clinico.</CardDescription>
+          <CardTitle className="text-2xl text-center">Staff Sign In</CardTitle>
+          <CardDescription className="text-center">Receptionist and doctor access for Clinico.</CardDescription>
         </CardHeader>
         <CardContent>
           <LoginForm />

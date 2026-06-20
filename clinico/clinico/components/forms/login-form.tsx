@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -9,6 +8,7 @@ import { toast } from "sonner";
 import { loginSchema, LoginSchema } from "@/lib/validations";
 import { api, ApiError } from "@/lib/api";
 import { homeForRole, sessionFromAuth, setClientSession } from "@/lib/session";
+import { isStaffRole } from "@/lib/auth-role";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,13 +27,14 @@ export function LoginForm() {
   const onSubmit = async (values: LoginSchema) => {
     try {
       const auth = await api.auth.login(values);
+      if (!isStaffRole(auth.role)) {
+        toast.error("Only clinic staff can sign in.");
+        return;
+      }
+
       setClientSession(sessionFromAuth(auth));
 
-      if (auth.role !== "Doctor" && auth.role !== "Patient") {
-        toast.info(`Signed in as ${auth.role}. No dedicated portal is available for this role.`);
-      } else {
-        toast.success(`Welcome back, ${auth.fullName.split(" ")[0]}!`);
-      }
+      toast.success(`Welcome back, ${auth.fullName.split(" ")[0]}!`);
 
       router.push(homeForRole(auth.role));
       router.refresh();
@@ -61,10 +62,7 @@ export function LoginForm() {
       </Button>
 
       <p className="text-center text-sm text-muted-foreground">
-        No account?{" "}
-        <Link href="/register" className="font-medium text-primary hover:underline">
-          Create one
-        </Link>
+        Staff access only. Ask the clinic administrator for credentials.
       </p>
     </form>
   );

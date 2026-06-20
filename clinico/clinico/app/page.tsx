@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Logo } from "@/components/common/logo";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { clearClientSession, getClientSession, homeForRole } from "@/lib/session";
+import { isStaffRole } from "@/lib/auth-role";
 import type { Session } from "@/types";
 import {
   DropdownMenu,
@@ -42,10 +43,10 @@ const services = [
 ];
 
 const stats = [
-  { label: "Patient Satisfaction", value: "98%", icon: Star },
+  { label: "Booked Visits", value: "1.2k+", icon: Star },
   { label: "Average Wait Time", value: "8 min", icon: Clock3 },
-  { label: "Appointments / Month", value: "1.2k+", icon: CalendarCheck2 },
-  { label: "Active Specialists", value: "24", icon: Users }
+  { label: "Managed Appointments", value: "98%", icon: CalendarCheck2 },
+  { label: "Staff Accounts", value: "24", icon: Users }
 ];
 
 const galleryImages = [
@@ -56,7 +57,7 @@ const galleryImages = [
   },
   {
     src: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=800&q=80",
-    alt: "Patient Consultation",
+    alt: "Dental Consultation",
     className: "h-48"
   },
   {
@@ -88,9 +89,10 @@ export default function LandingPage() {
   const isDoctor = session?.role === "Doctor";
   const namePrefix = isDoctor ? "Dr. " : "";
   const firstName = session?.fullName?.split(" ")[0] || (isDoctor ? "Doctor" : "there");
-  const dashboardHref = session ? homeForRole(session.role) : "/login";
-  const appointmentsHref = isDoctor ? "/doctor/appointments" : "/patient/appointments";
-  const showAppointments = session?.role === "Doctor" || session?.role === "Patient";
+  const isStaff = isStaffRole(session?.role);
+  const dashboardHref = isStaff && session ? homeForRole(session.role) : "/login";
+  const appointmentsHref = "/doctor/appointments";
+  const showAppointments = isStaff;
 
   return (
     <main className="min-h-screen bg-background transition-colors duration-300">
@@ -155,7 +157,7 @@ export default function LandingPage() {
                 <Link href="/login">Sign In</Link>
               </Button>
               <Button asChild className="rounded-full px-6 shadow-md transition-all hover:scale-105 active:scale-95">
-                <Link href="/register">Get Started</Link>
+                <Link href="/login">Staff Login</Link>
               </Button>
             </>
           )}
@@ -182,11 +184,11 @@ export default function LandingPage() {
               Elevate Your <span className="bg-gradient-to-r from-primary to-cyan-500 bg-clip-text text-transparent">Dental Practice</span>
             </h1>
             <p className="max-w-xl text-xl leading-relaxed text-muted-foreground">
-              A premium platform for modern dental clinics — patients book and track their care while clinic staff manage appointments, schedules, and records in one place.
+              A focused platform for dental clinics where receptionists manage booking and doctors track appointments, schedules, delays, and services in one place.
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
               <Button asChild size="lg" className="h-14 rounded-full px-8 text-lg shadow-xl shadow-primary/20">
-                <Link href="/register">Get Started Now</Link>
+                <Link href="/login">Open Staff Portal</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="h-14 rounded-full px-8 text-lg bg-background">
                 <Link href="/dental-diseases">Dental Education</Link>
@@ -233,8 +235,8 @@ export default function LandingPage() {
                     <Stethoscope className="h-6 w-6 text-primary-foreground" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold">Smart Patient Care</h3>
-                    <p className="text-sm text-muted-foreground">Manage records and appointments with ease.</p>
+                    <h3 className="text-xl font-bold">Smart Clinic Workflow</h3>
+                    <p className="text-sm text-muted-foreground">Manage bookings, schedules, and delays with ease.</p>
                   </div>
                 </div>
               </div>
@@ -250,7 +252,7 @@ export default function LandingPage() {
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Patient Efficiency</p>
+                  <p className="text-xs text-muted-foreground">Clinic Efficiency</p>
                   <p className="font-bold text-foreground">+40%</p>
                 </div>
               </div>
@@ -348,11 +350,11 @@ export default function LandingPage() {
           <div className="grid gap-16 lg:grid-cols-2 items-center">
             <div className="space-y-6">
               <h2 className="text-4xl font-bold text-foreground leading-tight">
-                Empower Your Patients with <br />
+                Support Better Consultations with <br />
                 <span className="text-primary">Dental Knowledge</span>
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Better outcomes start with better understanding. Our integrated patient education module helps your patients learn about common dental conditions and treatments.
+                Better outcomes start with better explanations. The dental health module gives clinic staff clear material about common conditions and treatments.
               </p>
               <ul className="space-y-4">
                 {[
@@ -431,11 +433,11 @@ export default function LandingPage() {
           <div className="relative z-10 space-y-8">
             <h2 className="text-4xl font-bold md:text-5xl text-white">Ready to Transform Your Clinic?</h2>
             <p className="mx-auto max-w-2xl text-xl text-slate-300/90 leading-relaxed">
-              Join hundreds of successful dentists who have modernized their practice with Clinico. Start your free trial today.
+              Give receptionists and doctors one calm workspace for appointments, schedules, services, and day-of-clinic updates.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button asChild size="lg" className="h-14 rounded-full bg-white px-10 text-lg font-bold text-[#020617] hover:bg-slate-100 transition-all hover:scale-105 active:scale-95 shadow-xl border-none">
-                <Link href="/register">Create Your Account</Link>
+                <Link href="/login">Sign In to Staff Portal</Link>
               </Button>
               <Button asChild size="lg" className="h-14 rounded-full border-2 border-white/30 bg-transparent px-10 text-lg font-bold text-white hover:bg-white/10 transition-all hover:scale-105 active:scale-95">
                 <Link href="/login">Sign In</Link>

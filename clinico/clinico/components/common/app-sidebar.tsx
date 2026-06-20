@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { PanelLeftClose, PanelLeftOpen, SmilePlus } from "lucide-react";
 import { BackendRole, Portal } from "@/types";
-import { doctorSidebarItems, patientSidebarItems } from "@/lib/constants";
+import { doctorSidebarItems } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/store/ui-store";
 import { Button } from "@/components/ui/button";
@@ -17,9 +17,9 @@ interface AppSidebarProps {
   role?: BackendRole;
 }
 
-export function AppSidebar({ portal, role }: AppSidebarProps) {
+export function AppSidebar({ role }: AppSidebarProps) {
   const pathname = usePathname();
-  const items = (portal === "doctor" ? doctorSidebarItems : patientSidebarItems).filter(
+  const items = doctorSidebarItems.filter(
     (i) => i.href !== "/doctor/schedule" || role === "Doctor" || role === "Admin"
   );
   const { sidebarCollapsed, toggleSidebar } = useUIStore();

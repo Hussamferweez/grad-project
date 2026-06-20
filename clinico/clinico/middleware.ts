@@ -2,38 +2,36 @@ import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, decodeSession, homeForRole } from "@/lib/session";
 import { isStaffRole } from "@/lib/auth-role";
 
-const doctorRoutes = ["/doctor"];
-const patientRoutes = ["/patient"];
-const authRoutes = ["/login", "/register"];
+const staffRoutes = ["/doctor"];
+const retiredRoutes = ["/patient", "/register"];
+const authRoutes = ["/login"];
 
 export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const session = decodeSession(request.cookies.get(SESSION_COOKIE)?.value);
   const role = session?.role ?? null;
 
-  const isDoctorRoute = doctorRoutes.some((r) => path.startsWith(r));
-  const isPatientRoute = patientRoutes.some((r) => path.startsWith(r));
+  const isStaffRoute = staffRoutes.some((r) => path.startsWith(r));
+  const isRetiredRoute = retiredRoutes.some((r) => path.startsWith(r));
   const isAuthRoute = authRoutes.some((r) => path.startsWith(r));
 
-  const redirectTo = (pathname: string) => {
+  const redirectTo = (pathname: string, clearSession = false) => {
     const url = request.nextUrl.clone();
     url.pathname = pathname;
-    return NextResponse.redirect(url);
+    const response = NextResponse.redirect(url);
+    if (clearSession) response.cookies.delete(SESSION_COOKIE);
+    return response;
   };
 
-  // Not signed in → protect both portals.
+  if (isRetiredRoute) return redirectTo("/login", true);
+
   if (!role) {
-    if (isDoctorRoute || isPatientRoute) return redirectTo("/login");
+    if (isStaffRoute) return redirectTo("/login");
     return NextResponse.next();
   }
 
-  // Clinic staff (Doctor / Receptionist / Admin) may enter the staff portal.
-  if (isDoctorRoute && !isStaffRole(role)) return redirectTo(homeForRole(role));
+  if (!isStaffRole(role)) return redirectTo("/login", true);
 
-  // Only Patient may enter the patient portal.
-  if (isPatientRoute && role !== "Patient") return redirectTo(homeForRole(role));
-
-  // Signed-in users shouldn't see the login / register pages.
   if (isAuthRoute) return redirectTo(homeForRole(role));
 
   return NextResponse.next();

@@ -1,4 +1,4 @@
-import type { AppointmentStatus, BackendRole, Portal } from "@/types";
+import type { AppointmentStatus, BackendRole } from "@/types";
 
 export const BACKEND_ROLES: BackendRole[] = ["Admin", "Doctor", "Receptionist", "Patient"];
 
@@ -10,11 +10,7 @@ export function isBackendRole(value: unknown): value is BackendRole {
 export const isStaffRole = (r?: BackendRole | null): boolean =>
   r === "Doctor" || r === "Receptionist" || r === "Admin";
 
-/** Which portal a backend role uses. */
-export function portalForRole(role: BackendRole): Portal {
-  return role === "Patient" ? "patient" : "doctor";
-}
-
+/** Which portal a backend role uses. Patient accounts are not allowed into the app. */
 // ── Capability checks — mirror the backend authorization policies so the UI only
 //    ever shows actions the current role can actually perform. ────────────────────
 export const canBookAppointment = (r?: BackendRole | null) => r === "Receptionist" || r === "Admin";

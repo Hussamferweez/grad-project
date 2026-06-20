@@ -6,8 +6,8 @@
 /** Roles as defined by the backend (JWT role claim / AuthResponse.role). */
 export type BackendRole = "Admin" | "Doctor" | "Receptionist" | "Patient";
 
-/** Which front-end portal a user lands in. Derived from the backend role. */
-export type Portal = "doctor" | "patient";
+/** The app exposes a staff portal for Receptionist and Doctor users. */
+export type Portal = "doctor";
 
 /** Appointment status strings as serialized by the backend enum. */
 export type AppointmentStatus = "Booked" | "Confirmed" | "Delayed" | "Completed" | "Cancelled";

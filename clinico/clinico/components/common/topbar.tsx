@@ -4,9 +4,9 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Menu, Stethoscope, User, LogOut } from "lucide-react";
+import { Menu, Stethoscope, LogOut } from "lucide-react";
 import { BackendRole, Portal } from "@/types";
-import { doctorSidebarItems, patientSidebarItems } from "@/lib/constants";
+import { doctorSidebarItems } from "@/lib/constants";
 import { clearClientSession } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/common/theme-toggle";
@@ -27,14 +27,14 @@ const titleMap: Record<string, string> = {
   profile: "Profile"
 };
 
-export function Topbar({ portal, role, userFullName }: { portal: Portal; role?: BackendRole; userFullName?: string }) {
+export function Topbar({ role, userFullName }: { portal: Portal; role?: BackendRole; userFullName?: string }) {
   const pathname = usePathname();
   const router = useRouter();
-  const menuItems = (portal === "doctor" ? doctorSidebarItems : patientSidebarItems).filter(
+  const menuItems = doctorSidebarItems.filter(
     (i) => i.href !== "/doctor/schedule" || role === "Doctor" || role === "Admin"
   );
   const namePrefix = role === "Doctor" ? "Dr. " : "";
-  const HeaderIcon = portal === "patient" ? User : Stethoscope;
+  const HeaderIcon = Stethoscope;
 
   const handleLogout = () => {
     clearClientSession();
@@ -44,8 +44,8 @@ export function Topbar({ portal, role, userFullName }: { portal: Portal; role?: 
 
   const title = useMemo(() => {
     const segment = pathname.split("/").filter(Boolean).at(-1) ?? "dashboard";
-    return titleMap[segment] ?? (portal === "doctor" ? "Staff Portal" : "Patient Portal");
-  }, [pathname, portal]);
+    return titleMap[segment] ?? "Staff Portal";
+  }, [pathname]);
 
   return (
     <motion.header

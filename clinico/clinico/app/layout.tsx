@@ -6,7 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Clinico - Dental Clinic Management System",
-  description: "Modern dental clinic SaaS for doctors and patients"
+  description: "Modern dental clinic workspace for receptionists and doctors"
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
