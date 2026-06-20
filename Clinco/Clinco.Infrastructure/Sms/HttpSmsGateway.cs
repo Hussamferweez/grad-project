@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Twilio.Base;
 using Twilio.Clients;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
@@ -19,18 +20,24 @@ internal sealed class HttpSmsGateway(
     {
         try
         {
-            var client = new TwilioRestClient("AC595eeef10038822afb1bf2e77576964c", "f8e83f837ce8bd0b42475ceef20fb3c8");
-
-            var message = await MessageResource.CreateAsync(
-                to: new PhoneNumber(phoneNumber),
-                from: new PhoneNumber("+1 817 631 4549"),
-                body: messageContent,
-                client: client
+            var credentials = Vonage.Request.Credentials.FromApiKeyAndSecret(
+                "5e7632e4",
+                "IzY*nLqiY4N1m("
             );
+            var client = new VonageClient(credentials);
 
-            logger.LogInformation(
-                "SMS sent via Twilio. Sid: {MessageSid}, Status: {Status}, To: {Phone}",
-                message.Sid, message.Status, phoneNumber);
+            var response = await client.SmsClient.SendAnSmsAsync(new Vonage.Messaging.SendSmsRequest
+            {
+                To = phoneNumber,
+                From = "+201270079243",
+                Text = messageContent
+            });
+
+            if (response.Messages.Any(m => m.Status != "0"))
+            {
+                logger.LogError($"Failed to send SMS: {response.Messages.FirstOrDefault()?.ErrorText}");
+            }
+            logger.LogInformation($"SMS sent successfully to {phoneNumber} Message: {messageContent}");
         }
         catch (Exception ex)
         {
