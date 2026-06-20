@@ -154,6 +154,31 @@ export interface ChangePasswordPayload {
   newPassword: string;
 }
 
+export interface CreatePatientPayload {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  gender: "Male" | "Female" | "Other";
+  email?: string | null;
+  age?: number | null;
+  dateOfBirth?: string | null;
+  address?: string | null;
+  emergencyContact?: string | null;
+  medicalNotes?: string | null;
+}
+
+export interface CreateStaffPayload {
+  username: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  roleName: "Doctor" | "Receptionist";
+  address?: string | null;
+  emergencyContact?: string | null;
+}
+
 export interface BookAppointmentPayload {
   patientId: number;
   dentistId: number;
@@ -209,6 +234,10 @@ export const api = {
       apiRequest<UserSummary[]>(`/api/Users/by-role/${roleId}`, { token }),
     getByRoleName: (roleName: string, token?: string) =>
       apiRequest<UserSummary[]>(`/api/Users/role/${encodeURIComponent(roleName)}`, { token }),
+    createPatient: (payload: CreatePatientPayload, token?: string) =>
+      apiRequest<UserSummary>("/api/Users/patients", { method: "POST", body: payload, token }),
+    createStaff: (payload: CreateStaffPayload, token?: string) =>
+      apiRequest<UserSummary>("/api/Users/staff", { method: "POST", body: payload, token }),
     getById: (id: number, token?: string) => apiRequest<UserProfile>(`/api/Users/${id}`, { token })
   },
 
@@ -219,6 +248,8 @@ export const api = {
       apiRequest<Appointment[]>(`/api/Appointments/patient/${patientId}`, { token }),
     getByDate: (date: string, token?: string) =>
       apiRequest<Appointment[]>(`/api/Appointments/date/${date}`, { token }),
+    getByRange: (from: string, to: string, token?: string) =>
+      apiRequest<Appointment[]>("/api/Appointments/range", { query: { from, to }, token }),
     getByDentist: (dentistId: number, date?: string, token?: string) =>
       apiRequest<Appointment[]>(`/api/Appointments/dentist/${dentistId}`, { query: { date }, token }),
     book: (payload: BookAppointmentPayload, token?: string) =>

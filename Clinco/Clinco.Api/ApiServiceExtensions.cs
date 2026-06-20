@@ -1,5 +1,6 @@
 using API.Services;
 using Clinco.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -56,11 +57,15 @@ public static class ApiServiceExtensions
         // ── Authorization policies ─────────────────────────────────────────
         services.AddAuthorization(options =>
         {
-            options.AddPolicy("AdminOnly",          p => p.RequireRole("Admin"));
-            options.AddPolicy("DoctorOrAdmin",      p => p.RequireRole("Doctor", "Admin"));
-            options.AddPolicy("ReceptionistOrAdmin",p => p.RequireRole("Receptionist", "Admin"));
-            options.AddPolicy("ClinicStaff",        p => p.RequireRole("Doctor", "Receptionist", "Admin"));
-            options.AddPolicy("PatientOnly",        p => p.RequireRole("Patient"));
+            options.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
+                .RequireAuthenticatedUser()
+                .RequireRole("Admin", "Doctor", "Receptionist")
+                .Build();
+
+            options.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
+            options.AddPolicy("DoctorOrAdmin", p => p.RequireRole("Doctor", "Admin"));
+            options.AddPolicy("ReceptionistOrAdmin", p => p.RequireRole("Receptionist", "Admin"));
+            options.AddPolicy("ClinicStaff", p => p.RequireRole("Admin", "Doctor", "Receptionist"));
         });
 
         // ── CORS ───────────────────────────────────────────────────────────

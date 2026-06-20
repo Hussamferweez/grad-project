@@ -18,6 +18,7 @@ public record BookAppointmentcmd(
     int PatientId,
     int DentistId,
     string AppointmentDate,
+    string? AppointmentTime,
     int ServiceId,
     int CreatedBy,
     int? ScheduleId = null) : IRequest<AppointmentDto>;
@@ -34,10 +35,9 @@ public class BookAppointmentcmdValidator : AbstractValidator<BookAppointmentcmd>
             .Must(d => DateOnly.TryParse(d, out var date) && date >= DateOnly.FromDateTime(DateTime.UtcNow.Date))
             .WithMessage("Appointment date must be today or in the future.");
 
-        //RuleFor(x => x.AppointmentTime)
-        //    .NotEmpty()
-        //    .Must(t => TimeOnly.TryParse(t, out _)).WithMessage("AppointmentTime must be in HH:mm format.");
-
+        RuleFor(x => x.AppointmentTime)
+            .Must(t => string.IsNullOrWhiteSpace(t) || TimeOnly.TryParse(t, out _))
+            .WithMessage("AppointmentTime must be in HH:mm format.");
     }
 }
 
@@ -72,11 +72,17 @@ public class BookAppointmentcmdHandler : IRequestHandler<BookAppointmentcmd, App
 
     public async Task<AppointmentDto> Handle(BookAppointmentcmd cmd, CancellationToken ct)
     {
-        _ = await _users.GetByIdAsync(cmd.PatientId, ct)
+        var patient = await _users.GetByIdAsync(cmd.PatientId, ct)
             ?? throw new NotFoundException(nameof(User), cmd.PatientId);
 
-        _ = await _users.GetByIdAsync(cmd.DentistId, ct)
+        if (patient.Role.RoleName != "Patient")
+            throw new ConflictException("Selected patient must have the Patient role.");
+
+        var dentist = await _users.GetByIdAsync(cmd.DentistId, ct)
             ?? throw new NotFoundException(nameof(User), cmd.DentistId);
+
+        if (dentist.Role.RoleName != "Doctor")
+            throw new ConflictException("Selected dentist must have the Doctor role.");
 
         var date = DateOnly.Parse(cmd.AppointmentDate);
 
@@ -91,28 +97,33 @@ public class BookAppointmentcmdHandler : IRequestHandler<BookAppointmentcmd, App
         if (schedule is null)
             throw new InvalidOperationException("No schedule found for this dentist on the selected date.");
 
-        var slotStart = schedule.StartTime;
-        TimeOnly? availableSlot = null;
+        if (!schedule.IsAvailable)
+            throw new ConflictException("The selected dentist schedule is not available.");
 
-        while (slotStart.AddMinutes(service.ApproximateDurationMinutes) <= schedule.EndTime)
-        {
-            var hasConflict = await _appointments.HasConflictAsync(
-                cmd.DentistId,
-                date,
-                slotStart,
-                service.ApproximateDurationMinutes);
+        var requestedSlot = string.IsNullOrWhiteSpace(cmd.AppointmentTime)
+            ? FindFirstAvailableSlot(schedule.StartTime, schedule.EndTime, service.ApproximateDurationMinutes, cmd.DentistId, date, ct)
+            : Task.FromResult<TimeOnly?>(TimeOnly.Parse(cmd.AppointmentTime));
 
-            if (!hasConflict)
-            {
-                availableSlot = slotStart;
-                break;
-            }
-
-            slotStart = slotStart.AddMinutes(15); // configurable
-        }
+        var availableSlot = await requestedSlot;
 
         if (availableSlot is null)
-            throw new InvalidOperationException("No available slots for this date.");
+            throw new ConflictException("No available slots for this date.");
+
+        if (availableSlot.Value < schedule.StartTime ||
+            availableSlot.Value.AddMinutes(service.ApproximateDurationMinutes) > schedule.EndTime)
+        {
+            throw new ConflictException("Appointment time must be inside the dentist schedule.");
+        }
+
+        var hasConflict = await _appointments.HasConflictAsync(
+            cmd.DentistId,
+            date,
+            availableSlot.Value,
+            service.ApproximateDurationMinutes,
+            cancellationToken: ct);
+
+        if (hasConflict)
+            throw new ConflictException("The selected appointment time conflicts with another appointment.");
 
         var appointment = Appointment.Book(
             cmd.PatientId,
@@ -126,16 +137,46 @@ public class BookAppointmentcmdHandler : IRequestHandler<BookAppointmentcmd, App
         await _appointments.CreateAsync(appointment);
         await _uow.SaveChangesAsync();
 
+        var created = await _appointments.GetByIdAsync(appointment.Id, ct)
+            ?? throw new NotFoundException(nameof(Appointment), appointment.Id);
+
         await _publisher.Publish(new SmsNotificationRequestedEvent(
-            appointment.Id,
-            appointment.PatientId,
-            appointment.Patient.PhoneNumber,
+            created.Id,
+            created.PatientId,
+            created.Patient.PhoneNumber,
             "Appointment Booked",
-            $"Dear {appointment.Patient.FullName}, your appointment is at {availableSlot.Value}"
+            $"Dear {created.Patient.FullName}, your appointment is at {availableSlot.Value}"
         ));
 
-        var created = await _appointments.GetByIdAsync(appointment.Id, ct);
-        return _mapper.Map<AppointmentDto>(created!);
+        return _mapper.Map<AppointmentDto>(created);
+    }
+
+    private async Task<TimeOnly?> FindFirstAvailableSlot(
+        TimeOnly startTime,
+        TimeOnly endTime,
+        int durationMinutes,
+        int dentistId,
+        DateOnly date,
+        CancellationToken ct)
+    {
+        var slotStart = startTime;
+
+        while (slotStart.AddMinutes(durationMinutes) <= endTime)
+        {
+            var hasConflict = await _appointments.HasConflictAsync(
+                dentistId,
+                date,
+                slotStart,
+                durationMinutes,
+                cancellationToken: ct);
+
+            if (!hasConflict)
+                return slotStart;
+
+            slotStart = slotStart.AddMinutes(15);
+        }
+
+        return null;
     }
 }
 

@@ -49,9 +49,30 @@ export default async function DoctorDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border bg-gradient-to-r from-primary/10 via-cyan-100/40 to-emerald-100/40 p-5">
-        <h2 className="text-lg font-semibold">Today at a Glance</h2>
-        <p className="text-sm text-muted-foreground">A quick snapshot of your appointments and patient load.</p>
+      <div className="overflow-hidden rounded-lg border border-white/70 bg-slate-950 text-white shadow-[0_24px_70px_-45px_hsl(218_50%_18%)] dark:border-white/10">
+        <div className="grid gap-5 p-5 md:grid-cols-[1.5fr_1fr] md:p-6">
+          <div>
+            <Badge className="mb-3 rounded-md bg-primary/20 text-cyan-100 hover:bg-primary/20">
+              {session.role} workspace
+            </Badge>
+            <h2 className="text-2xl font-semibold">Today at a Glance</h2>
+            <p className="mt-2 max-w-2xl text-sm text-slate-300">A focused view of appointments, workload, and patient movement.</p>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+              <p className="text-xs text-slate-400">Today</p>
+              <p className="mt-1 text-2xl font-semibold">{todayAppointments}</p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+              <p className="text-xs text-slate-400">Pending</p>
+              <p className="mt-1 text-2xl font-semibold">{pendingAppointments}</p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+              <p className="text-xs text-slate-400">Done</p>
+              <p className="mt-1 text-2xl font-semibold">{completedAppointments}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {loadError && (
@@ -76,7 +97,7 @@ export default async function DoctorDashboardPage() {
           <CardContent className="space-y-3">
             {upcoming.length ? (
               upcoming.map((appointment) => (
-                <div key={appointment.id} className="rounded-lg border p-3">
+                <div key={appointment.id} className="rounded-lg border bg-white/60 p-3 shadow-sm dark:bg-white/5">
                   <p className="font-medium">{appointment.patientName}</p>
                   <p className="text-sm text-muted-foreground">{appointment.serviceName}</p>
                   <div className="mt-2 flex items-center justify-between">

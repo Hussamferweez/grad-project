@@ -13,6 +13,7 @@ internal sealed class AppointmentRepository(ClinicDbContext dbContext) : IAppoin
             .Include(x => x.Patient)
             .Include(x => x.Dentist)
             .Include(x => x.Schedule)
+            .Include(x => x.Service)
             .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
 
     public async Task<IReadOnlyList<Appointment>> GetByPatientIdAsync(
@@ -20,6 +21,9 @@ internal sealed class AppointmentRepository(ClinicDbContext dbContext) : IAppoin
         CancellationToken cancellationToken = default)
         => await dbContext.Appointments
             .AsNoTracking()
+            .Include(x => x.Patient)
+            .Include(x => x.Dentist)
+            .Include(x => x.Service)
             .Where(x => x.PatientId == patientId && !x.IsDeleted)
             .OrderBy(x => x.AppointmentDate)
             .ThenBy(x => x.AppointmentTime)
@@ -30,6 +34,9 @@ internal sealed class AppointmentRepository(ClinicDbContext dbContext) : IAppoin
         CancellationToken cancellationToken = default)
         => await dbContext.Appointments
             .AsNoTracking()
+            .Include(x => x.Patient)
+            .Include(x => x.Dentist)
+            .Include(x => x.Service)
             .Where(x => x.DentistId == dentistId && !x.IsDeleted)
             .OrderBy(x => x.AppointmentDate)
             .ThenBy(x => x.AppointmentTime)
@@ -40,8 +47,25 @@ internal sealed class AppointmentRepository(ClinicDbContext dbContext) : IAppoin
         CancellationToken cancellationToken = default)
         => await dbContext.Appointments
             .AsNoTracking()
+            .Include(x => x.Patient)
+            .Include(x => x.Dentist)
+            .Include(x => x.Service)
             .Where(x => x.AppointmentDate == date && !x.IsDeleted)
             .OrderBy(x => x.AppointmentTime)
+            .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<Appointment>> GetByDateRangeAsync(
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellationToken = default)
+        => await dbContext.Appointments
+            .AsNoTracking()
+            .Include(x => x.Patient)
+            .Include(x => x.Dentist)
+            .Include(x => x.Service)
+            .Where(x => x.AppointmentDate >= from && x.AppointmentDate <= to && !x.IsDeleted)
+            .OrderBy(x => x.AppointmentDate)
+            .ThenBy(x => x.AppointmentTime)
             .ToListAsync(cancellationToken);
 
     public async Task<IReadOnlyList<Appointment>> GetByDentistAndDateAsync(
@@ -49,7 +73,9 @@ internal sealed class AppointmentRepository(ClinicDbContext dbContext) : IAppoin
         DateOnly date,
         CancellationToken cancellationToken = default)
         => await dbContext.Appointments
+            .Include(x => x.Dentist)
             .Include(x => x.Patient)
+            .Include(x => x.Service)
             .Where(x => x.DentistId == dentistId && x.AppointmentDate == date && !x.IsDeleted)
             .OrderBy(x => x.AppointmentTime)
             .ToListAsync(cancellationToken);

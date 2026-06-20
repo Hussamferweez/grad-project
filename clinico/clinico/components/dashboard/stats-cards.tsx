@@ -12,10 +12,10 @@ interface StatsCardsProps {
 }
 
 const cards = [
-  { key: "todayAppointments", title: "Today's Appointments", icon: CalendarCheck2 },
-  { key: "pendingAppointments", title: "Pending", icon: Clock3 },
-  { key: "completedAppointments", title: "Completed", icon: SquareCheckBig },
-  { key: "totalAppointments", title: "Total Appointments", icon: ClipboardList }
+  { key: "todayAppointments", title: "Today's Appointments", icon: CalendarCheck2, tone: "bg-cyan-50 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-200" },
+  { key: "pendingAppointments", title: "Pending", icon: Clock3, tone: "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-200" },
+  { key: "completedAppointments", title: "Completed", icon: SquareCheckBig, tone: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200" },
+  { key: "totalAppointments", title: "Total Appointments", icon: ClipboardList, tone: "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-200" }
 ] as const;
 
 export function StatsCards(props: StatsCardsProps) {
@@ -33,16 +33,18 @@ export function StatsCards(props: StatsCardsProps) {
             transition={{ delay: index * 0.05 }}
             whileHover={{ y: -4 }}
           >
-            <Card className="border-primary/10 shadow-sm transition-shadow hover:shadow-md">
+            <Card className="shadow-sm transition-shadow hover:shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{card.title}</CardTitle>
-                <span className="rounded-lg bg-gradient-to-br from-primary/20 to-cyan-200/40 p-2 text-primary">
+                <span className={`rounded-lg p-2 ${card.tone}`}>
                   <Icon className="h-4 w-4" />
                 </span>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-semibold tracking-tight">{value}</div>
-                <div className="mt-1 h-1.5 w-20 rounded-full bg-gradient-to-r from-primary/70 to-cyan-400/70" />
+                <div className="mt-2 h-1.5 w-20 rounded-full bg-foreground/10">
+                  <div className="h-full w-2/3 rounded-full bg-primary" />
+                </div>
               </CardContent>
             </Card>
           </motion.div>

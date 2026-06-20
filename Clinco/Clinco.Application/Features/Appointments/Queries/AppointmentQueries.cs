@@ -81,6 +81,34 @@ public class GetAppointmentsByDateQueryHandler
 
 // ── GetAppointmentsByDentistQuery ─────────────────────────────────────────────
 
+public record GetAppointmentsByDateRangeQuery(string From, string To) : IRequest<IReadOnlyList<AppointmentDto>>;
+
+public class GetAppointmentsByDateRangeQueryHandler
+    : IRequestHandler<GetAppointmentsByDateRangeQuery, IReadOnlyList<AppointmentDto>>
+{
+    private readonly IAppointmentRepository _appointments;
+    private readonly IMapper _mapper;
+
+    public GetAppointmentsByDateRangeQueryHandler(IAppointmentRepository appointments, IMapper mapper)
+    {
+        _appointments = appointments;
+        _mapper = mapper;
+    }
+
+    public async Task<IReadOnlyList<AppointmentDto>> Handle(
+        GetAppointmentsByDateRangeQuery q, CancellationToken ct)
+    {
+        var from = DateOnly.Parse(q.From);
+        var to = DateOnly.Parse(q.To);
+
+        if (to < from)
+            throw new ConflictException("To date must be after from date.");
+
+        var list = await _appointments.GetByDateRangeAsync(from, to, ct);
+        return _mapper.Map<IReadOnlyList<AppointmentDto>>(list);
+    }
+}
+
 public record GetAppointmentsByDentistQuery(
     int DentistId,
     string? Date = null) : IRequest<IReadOnlyList<AppointmentDto>>;

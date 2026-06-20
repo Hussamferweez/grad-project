@@ -10,9 +10,10 @@ export function isBackendRole(value: unknown): value is BackendRole {
 export const isStaffRole = (r?: BackendRole | null): boolean =>
   r === "Doctor" || r === "Receptionist" || r === "Admin";
 
-/** Which portal a backend role uses. */
+/** Which portal a backend role uses. Patients do not have system access. */
 export function portalForRole(role: BackendRole): Portal {
-  return role === "Patient" ? "patient" : "doctor";
+  void role;
+  return "doctor";
 }
 
 // ── Capability checks — mirror the backend authorization policies so the UI only
@@ -21,7 +22,7 @@ export const canBookAppointment = (r?: BackendRole | null) => r === "Receptionis
 /** confirm / reschedule / complete */
 export const canManageAppointment = (r?: BackendRole | null) => r === "Receptionist" || r === "Admin";
 export const canCancelAppointment = (r?: BackendRole | null) => isStaffRole(r);
-export const canMarkDelay = (r?: BackendRole | null) => r === "Doctor" || r === "Admin";
+export const canMarkDelay = (r?: BackendRole | null) => isStaffRole(r);
 export const canCreateSchedule = (r?: BackendRole | null) => r === "Doctor" || r === "Admin";
 export const canToggleAvailability = (r?: BackendRole | null) => r === "Admin";
 

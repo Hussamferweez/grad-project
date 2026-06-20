@@ -15,7 +15,7 @@ export function LogoutButton() {
   };
 
   return (
-    <Button variant="ghost" onClick={handleSignOut} className="justify-start">
+    <Button variant="ghost" onClick={handleSignOut} className="w-full justify-start text-slate-400 hover:bg-white/10 hover:text-white">
       <LogOut className="mr-2 h-4 w-4" />
       Logout
     </Button>

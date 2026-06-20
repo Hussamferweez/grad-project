@@ -10,17 +10,34 @@ public class MappingProfiles : Profile
     {
         // ── User ──────────────────────────────────────────────────
         CreateMap<User, UserProfileDto>()
-            .ForMember(d => d.FullName,       o => o.MapFrom(s => s.FullName))
-            .ForMember(d => d.RoleName,       o => o.MapFrom(s => s.Role.RoleName))
-            .ForMember(d => d.DateOfBirth,    o => o.MapFrom(s => s.DateOfBirth.HasValue
-                                                    ? s.DateOfBirth.Value.ToString("yyyy-MM-dd")
-                                                    : null))
-            .ForMember(d => d.Gender,         o => o.MapFrom(s => s.Gender.ToString()))
-            .ForMember(d => d.LastLogin,      o => o.MapFrom(s => s.LastLogin));
+            .ConstructUsing(s => new UserProfileDto(
+                s.Id,
+                s.Username,
+                s.FirstName,
+                s.LastName,
+                s.FullName,
+                s.Email,
+                s.PhoneNumber,
+                s.DateOfBirth.HasValue ? s.DateOfBirth.Value.ToString("yyyy-MM-dd") : null,
+                s.Gender.ToString(),
+                s.Address,
+                s.EmergencyContact,
+                s.MedicalNotes,
+                s.Role != null ? s.Role.RoleName : string.Empty,
+                s.IsActive,
+                s.RegistrationDate,
+                s.LastLogin
+            ));
 
         CreateMap<User, UserSummaryDto>()
-            .ForMember(d => d.FullName,   o => o.MapFrom(s => s.FullName))
-            .ForMember(d => d.RoleName,   o => o.MapFrom(s => s.Role.RoleName));
+            .ConstructUsing(s => new UserSummaryDto(
+                s.Id,
+                s.FullName,
+                s.Email,
+                s.PhoneNumber,
+                s.Role != null ? s.Role.RoleName : string.Empty,
+                s.IsActive
+            ));
 
         // ── Schedule ──────────────────────────────────────────────
         CreateMap<Schedule, ScheduleDto>()
@@ -58,7 +75,19 @@ public class MappingProfiles : Profile
 
         // ── SmsNotification ───────────────────────────────────────
         CreateMap<SmsNotification, SmsNotificationDto>()
-            .ForMember(d => d.PatientName, o => o.MapFrom(s => s.Patient.FullName))
-            .ForMember(d => d.Status,      o => o.MapFrom(s => s.Status.ToString()));
+            .ConstructUsing(s => new SmsNotificationDto(
+                s.Id,
+                s.AppointmentId,
+                s.PatientId,
+                s.Patient != null ? s.Patient.FullName : string.Empty,
+                s.PhoneNumber,
+                s.MessageType,
+                s.MessageContent,
+                s.Status.ToString(),
+                s.ExternalMessageId,
+                s.FailureReason,
+                s.CreatedAt,
+                s.SentAt
+            ));
     }
 }

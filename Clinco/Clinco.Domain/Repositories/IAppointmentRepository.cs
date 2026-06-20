@@ -19,6 +19,11 @@ public interface IAppointmentRepository
         DateOnly date,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<Appointment>> GetByDateRangeAsync(
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<Appointment>> GetByDentistAndDateAsync(
         int dentistId,
         DateOnly date,

@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-/// <summary>Allows doctors to mark appointment delays.</summary>
-[Authorize(Policy = "DoctorOrAdmin")]
+/// <summary>Allows clinic staff to mark appointment delays.</summary>
+[Authorize(Policy = "ClinicStaff")]
 public class DelaysController : BaseApiController
 {
     /// <summary>

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -29,11 +28,7 @@ export function LoginForm() {
       const auth = await api.auth.login(values);
       setClientSession(sessionFromAuth(auth));
 
-      if (auth.role !== "Doctor" && auth.role !== "Patient") {
-        toast.info(`Signed in as ${auth.role}. No dedicated portal is available for this role.`);
-      } else {
-        toast.success(`Welcome back, ${auth.fullName.split(" ")[0]}!`);
-      }
+      toast.success(`Welcome back, ${auth.fullName.split(" ")[0]}!`);
 
       router.push(homeForRole(auth.role));
       router.refresh();
@@ -59,13 +54,6 @@ export function LoginForm() {
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
       </Button>
-
-      <p className="text-center text-sm text-muted-foreground">
-        No account?{" "}
-        <Link href="/register" className="font-medium text-primary hover:underline">
-          Create one
-        </Link>
-      </p>
     </form>
   );
 }

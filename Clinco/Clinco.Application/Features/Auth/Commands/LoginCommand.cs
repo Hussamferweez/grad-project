@@ -55,6 +55,9 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponse>
         if (!user.IsActive)
             throw new UnauthorizedException("Account is deactivated. Please contact support.");
 
+        if (user.Role.RoleName is not ("Admin" or "Doctor" or "Receptionist"))
+            throw new UnauthorizedException("Only clinic staff can access the system.");
+
         user.RecordLogin();
 
         var accessToken = _jwt.GenerateToken(user);

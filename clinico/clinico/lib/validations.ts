@@ -59,6 +59,9 @@ export const bookAppointmentSchema = z.object({
   date: z.string().min(1, "Date is required"),
   time: z.string().min(1, "Time is required"),
   scheduleId: z.coerce.number().int().positive().optional()
+}).refine((v) => v.date >= new Date().toISOString().slice(0, 10), {
+  message: "Date cannot be in the past",
+  path: ["date"]
 });
 
 // ── Schedule (dentist working hours / availability) ────────────────────────────
@@ -69,6 +72,10 @@ export const createScheduleSchema = z
     startTime: z.string().min(1, "Start time is required"),
     endTime: z.string().min(1, "End time is required"),
     isAvailable: z.boolean()
+  })
+  .refine((v) => v.date >= new Date().toISOString().slice(0, 10), {
+    message: "Date cannot be in the past",
+    path: ["date"]
   })
   .refine((v) => v.startTime < v.endTime, {
     message: "End time must be after start time",

@@ -23,7 +23,6 @@ public class AppointmentsController : BaseApiController
     /// <response code="201">Appointment created.</response>
     /// <response code="409">Time slot conflict.</response>
     //[HttpPost]
-    //[Authorize(Policy = "PatientOnly")]
     //[ProducesResponseType(StatusCodes.Status201Created)]
     //[ProducesResponseType(StatusCodes.Status409Conflict)]
     //[ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
@@ -73,19 +72,6 @@ public class AppointmentsController : BaseApiController
     }
 
     /// <summary>
-    /// Returns all appointments for the currently logged-in patient.
-    /// </summary>
-    [HttpGet("my")]
-    [Authorize(Policy = "PatientOnly")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetMine(CancellationToken ct)
-    {
-        var result = await Mediator.Send(
-            new GetAppointmentsByPatientQuery(_currentUser.UserId), ct);
-        return Ok(ApiResponse<object>.Ok(result));
-    }
-
-    /// <summary>
     /// Returns all appointments for a specific patient. Clinic staff only.
     /// </summary>
     [HttpGet("patient/{patientId:int}")]
@@ -107,6 +93,21 @@ public class AppointmentsController : BaseApiController
     public async Task<IActionResult> GetByDate(string date, CancellationToken ct)
     {
         var result = await Mediator.Send(new GetAppointmentsByDateQuery(date), ct);
+        return Ok(ApiResponse<object>.Ok(result));
+    }
+
+    /// <summary>
+    /// Returns all appointments in a date range. Clinic staff only.
+    /// </summary>
+    [HttpGet("range")]
+    [Authorize(Policy = "ClinicStaff")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetByDateRange(
+        [FromQuery] string from,
+        [FromQuery] string to,
+        CancellationToken ct)
+    {
+        var result = await Mediator.Send(new GetAppointmentsByDateRangeQuery(from, to), ct);
         return Ok(ApiResponse<object>.Ok(result));
     }
 
@@ -153,8 +154,7 @@ public class AppointmentsController : BaseApiController
     }
 
     /// <summary>
-    /// Cancels an appointment.
-    /// Patients can only cancel their own; Receptionist/Admin can cancel any.
+    /// Cancels an appointment. Clinic staff only.
     /// </summary>
     /// <response code="204">Cancelled.</response>
     /// <response code="403">Patient trying to cancel someone else's appointment.</response>

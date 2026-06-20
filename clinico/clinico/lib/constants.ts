@@ -1,4 +1,4 @@
-import { CalendarDays, Clock, FileText, LayoutDashboard, Settings, Stethoscope, User } from "lucide-react";
+import { CalendarDays, Clock, FileText, LayoutDashboard, Settings, Stethoscope, User, Users } from "lucide-react";
 
 // Sidebar navigation. Only pages backed by a real API endpoint are listed —
 // the old billing / dental-chart / payments / patient-CRM pages were removed
@@ -7,6 +7,8 @@ import { CalendarDays, Clock, FileText, LayoutDashboard, Settings, Stethoscope, 
 export const doctorSidebarItems = [
   { label: "Dashboard", href: "/doctor/dashboard", icon: LayoutDashboard },
   { label: "Appointments", href: "/doctor/appointments", icon: CalendarDays },
+  { label: "Patients", href: "/doctor/patients", icon: Users },
+  { label: "Staff Accounts", href: "/doctor/staff", icon: User },
   { label: "Calendar", href: "/doctor/calendar", icon: Stethoscope },
   { label: "Schedule", href: "/doctor/schedule", icon: Clock },
   { label: "Settings", href: "/doctor/settings", icon: Settings }

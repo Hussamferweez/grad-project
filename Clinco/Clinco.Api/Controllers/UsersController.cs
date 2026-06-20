@@ -72,6 +72,34 @@ public class UsersController : BaseApiController
         return Ok(ApiResponse<object>.Ok(result));
     }
 
+    /// <summary>Creates a patient record for booking and clinic history. Patients still cannot log in.</summary>
+    [HttpPost("patients")]
+    [Authorize(Policy = "ReceptionistOrAdmin")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> CreatePatient(
+        [FromBody] CreatePatientRecordCommand command,
+        CancellationToken ct)
+    {
+        var result = await Mediator.Send(command, ct);
+        return StatusCode(StatusCodes.Status201Created, ApiResponse<object>.Ok(result));
+    }
+
+    /// <summary>Creates a staff account for a doctor or receptionist. Admin only.</summary>
+    [HttpPost("staff")]
+    [Authorize(Policy = "AdminOnly")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> CreateStaff(
+        [FromBody] CreateStaffAccountCommand command,
+        CancellationToken ct)
+    {
+        var result = await Mediator.Send(command, ct);
+        return StatusCode(StatusCodes.Status201Created, ApiResponse<object>.Ok(result));
+    }
+
     /// <summary>Updates the authenticated user's profile.</summary>
     /// <response code="204">Profile updated.</response>
     /// <response code="422">Validation errors.</response>

@@ -36,7 +36,7 @@ internal sealed class DataSeeder : IHostedService
         var db = scope.ServiceProvider.GetRequiredService<ClinicDbContext>();
         var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
 
-        await db.Database.EnsureCreatedAsync(ct);
+        await db.Database.MigrateAsync(ct);
 
         // ── 1. Roles (required — register/login resolve roles by name) ──────────
         if (!await db.Roles.AnyAsync(ct))

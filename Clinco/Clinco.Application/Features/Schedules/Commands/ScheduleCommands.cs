@@ -38,7 +38,16 @@ public class CreateScheduleCommandValidator : AbstractValidator<CreateScheduleCo
 
         RuleFor(x => x.Date)
             .NotEmpty()
-            .Must(d => DateOnly.TryParse(d, out _)).WithMessage("Date must be in yyyy-MM-dd format.");
+            .Must(d => DateOnly.TryParse(d, out _)).WithMessage("Date must be in yyyy-MM-dd format.")
+            .Must(d => DateOnly.TryParse(d, out var date) && date >= DateOnly.FromDateTime(DateTime.UtcNow.Date))
+            .WithMessage("Schedule date must be today or in the future.");
+
+        RuleFor(x => x)
+            .Must(x =>
+                TimeOnly.TryParse(x.StartTime, out var start) &&
+                TimeOnly.TryParse(x.EndTime, out var end) &&
+                end > start)
+            .WithMessage("End time must be after start time.");
     }
 }
 
@@ -61,6 +70,9 @@ public class CreateScheduleCommandHandler : IRequestHandler<CreateScheduleComman
         // Verify dentist exists
         var dentist = await _users.GetByIdAsync(cmd.DentistId, ct)
             ?? throw new NotFoundException(nameof(User), cmd.DentistId);
+
+        if (dentist.Role.RoleName != "Doctor")
+            throw new ConflictException("Schedule can only be created for a doctor.");
 
         var date      = DateOnly.Parse(cmd.Date);
         var startTime = TimeOnly.Parse(cmd.StartTime);

@@ -37,17 +37,18 @@ export function decodeSession(raw: string | undefined | null): Session | null {
   }
 }
 
-/** Maps a backend role to the portal the user belongs to. */
+/** Maps a backend role to the staff portal. Patients do not have system access. */
 export function portalForRole(role: BackendRole): Portal {
-  return role === "Patient" ? "patient" : "doctor";
+  void role;
+  return "doctor";
 }
 
 /**
- * Landing route for a role. Clinic staff (Doctor / Receptionist / Admin) share
- * the staff portal; patients use the patient portal.
+ * Landing route for a role. Clinic staff share the staff portal.
  */
 export function homeForRole(role: BackendRole): string {
-  return role === "Patient" ? "/patient/dashboard" : "/doctor/dashboard";
+  void role;
+  return "/doctor/dashboard";
 }
 
 // ── Client-side cookie access (browser only) ──────────────────────────────────

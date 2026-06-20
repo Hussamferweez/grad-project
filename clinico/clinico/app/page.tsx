@@ -89,8 +89,8 @@ export default function LandingPage() {
   const namePrefix = isDoctor ? "Dr. " : "";
   const firstName = session?.fullName?.split(" ")[0] || (isDoctor ? "Doctor" : "there");
   const dashboardHref = session ? homeForRole(session.role) : "/login";
-  const appointmentsHref = isDoctor ? "/doctor/appointments" : "/patient/appointments";
-  const showAppointments = session?.role === "Doctor" || session?.role === "Patient";
+  const appointmentsHref = "/doctor/appointments";
+  const showAppointments = !!session;
 
   return (
     <main className="min-h-screen bg-background transition-colors duration-300">
@@ -155,7 +155,7 @@ export default function LandingPage() {
                 <Link href="/login">Sign In</Link>
               </Button>
               <Button asChild className="rounded-full px-6 shadow-md transition-all hover:scale-105 active:scale-95">
-                <Link href="/register">Get Started</Link>
+                <Link href="/login">Staff Login</Link>
               </Button>
             </>
           )}
@@ -186,7 +186,7 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
               <Button asChild size="lg" className="h-14 rounded-full px-8 text-lg shadow-xl shadow-primary/20">
-                <Link href="/register">Get Started Now</Link>
+                <Link href="/login">Staff Login</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="h-14 rounded-full px-8 text-lg bg-background">
                 <Link href="/dental-diseases">Dental Education</Link>
@@ -435,7 +435,7 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button asChild size="lg" className="h-14 rounded-full bg-white px-10 text-lg font-bold text-[#020617] hover:bg-slate-100 transition-all hover:scale-105 active:scale-95 shadow-xl border-none">
-                <Link href="/register">Create Your Account</Link>
+                <Link href="/login">Staff Login</Link>
               </Button>
               <Button asChild size="lg" className="h-14 rounded-full border-2 border-white/30 bg-transparent px-10 text-lg font-bold text-white hover:bg-white/10 transition-all hover:scale-105 active:scale-95">
                 <Link href="/login">Sign In</Link>

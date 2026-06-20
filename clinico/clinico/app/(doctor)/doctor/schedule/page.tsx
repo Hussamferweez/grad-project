@@ -1,23 +1,34 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { addDays, format, parseISO } from "date-fns";
+import { addDays, format } from "date-fns";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScheduleFormDialog } from "@/components/schedules/schedule-form-dialog";
 import { api, ApiError } from "@/lib/api";
 import { getClientSession } from "@/lib/session";
 import { canCreateSchedule, canToggleAvailability } from "@/lib/auth-role";
-import type { BackendRole, Schedule } from "@/types";
+import type { BackendRole, Schedule, UserSummary } from "@/types";
+
+function formatScheduleDate(value: string) {
+  const isoDate = value?.slice(0, 10);
+  const fromIso = new Date(`${isoDate}T00:00:00`);
+  if (!Number.isNaN(fromIso.getTime())) return format(fromIso, "MMM d, yyyy");
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : format(parsed, "MMM d, yyyy");
+}
 
 export default function DoctorSchedulePage() {
-  const [dentistId, setDentistId] = useState<number | null>(null);
+  const [selectedDentistId, setSelectedDentistId] = useState<number | null>(null);
   const [role, setRole] = useState<BackendRole | null>(null);
+  const [doctors, setDoctors] = useState<UserSummary[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [from, setFrom] = useState(() => format(new Date(), "yyyy-MM-dd"));
   const [to, setTo] = useState(() => format(addDays(new Date(), 30), "yyyy-MM-dd"));
@@ -27,22 +38,35 @@ export default function DoctorSchedulePage() {
   useEffect(() => {
     const session = getClientSession();
     if (session) {
-      setDentistId(session.userId);
       setRole(session.role);
+      if (session.role === "Doctor") setSelectedDentistId(session.userId);
     }
+
+    api.users.getByRoleName("Doctor")
+      .then((items) => {
+        setDoctors(items);
+        if (session?.role !== "Doctor") {
+          setSelectedDentistId((current) => current ?? items[0]?.id ?? null);
+        }
+      })
+      .catch(() => setDoctors([]));
   }, []);
 
   const load = useCallback(async () => {
-    if (dentistId === null) return;
+    if (selectedDentistId === null) {
+      setSchedules([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      setSchedules(await api.schedules.getByDentist(dentistId, from, to));
+      setSchedules(await api.schedules.getByDentist(selectedDentistId, from, to));
     } catch (err) {
       toast.error(err instanceof ApiError ? err.errors[0] : "Unable to load schedule.");
     } finally {
       setLoading(false);
     }
-  }, [dentistId, from, to]);
+  }, [selectedDentistId, from, to]);
 
   useEffect(() => {
     void load();
@@ -67,6 +91,28 @@ export default function DoctorSchedulePage() {
         <div>
           <CardTitle>Working Hours</CardTitle>
           <div className="mt-3 flex flex-wrap items-end gap-3">
+            {role !== "Doctor" && (
+              <div className="space-y-1">
+                <Label htmlFor="dentist" className="text-xs text-muted-foreground">
+                  Dentist
+                </Label>
+                <Select
+                  value={selectedDentistId ? String(selectedDentistId) : ""}
+                  onValueChange={(value) => setSelectedDentistId(Number(value))}
+                >
+                  <SelectTrigger id="dentist" className="w-[220px]">
+                    <SelectValue placeholder="Select dentist" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {doctors.map((doctor) => (
+                      <SelectItem key={doctor.id} value={String(doctor.id)}>
+                        {doctor.fullName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-1">
               <Label htmlFor="from" className="text-xs text-muted-foreground">
                 From
@@ -81,7 +127,9 @@ export default function DoctorSchedulePage() {
             </div>
           </div>
         </div>
-        {dentistId !== null && canCreateSchedule(role) && <ScheduleFormDialog dentistId={dentistId} onCreated={load} />}
+        {selectedDentistId !== null && canCreateSchedule(role) && (
+          <ScheduleFormDialog dentistId={selectedDentistId} onCreated={load} />
+        )}
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -108,7 +156,7 @@ export default function DoctorSchedulePage() {
               ) : (
                 schedules.map((schedule) => (
                   <TableRow key={schedule.id}>
-                    <TableCell>{format(schedule.date, "MMM d, yyyy")}</TableCell>
+                    <TableCell>{formatScheduleDate(schedule.date)}</TableCell>
                     <TableCell>{schedule.dayOfWeek}</TableCell>
                     <TableCell>{schedule.startTime}</TableCell>
                     <TableCell>{schedule.endTime}</TableCell>
