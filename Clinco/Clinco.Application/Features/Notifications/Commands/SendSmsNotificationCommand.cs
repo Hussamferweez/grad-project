@@ -50,9 +50,19 @@ public class SendSmsNotificationCommandHandler : IRequestHandler<SendSmsNotifica
         await _notifications.CreateAsync(notification, ct);
         await _uow.SaveChangesAsync(ct);
 
-        await _smsService.SendAsync(cmd.PhoneNumber, cmd.MessageContent, ct);
-
-        // 3. Update status based on provider response
+        try
+        {
+            await _smsService.SendAsync(cmd.PhoneNumber, cmd.MessageContent, ct);
+            notification.MarkSent($"provider-{Guid.NewGuid():N}");
+            _logger.LogInformation("SMS sent to {PhoneNumber} for appointment {AppointmentId}.",
+                cmd.PhoneNumber, cmd.AppointmentId);
+        }
+        catch (Exception ex)
+        {
+            notification.MarkFailed(ex.Message);
+            _logger.LogError(ex, "SMS failed to {PhoneNumber} for appointment {AppointmentId}.",
+                cmd.PhoneNumber, cmd.AppointmentId);
+        }
 
         await _notifications.UpdateAsync(notification, ct);
         await _uow.SaveChangesAsync(ct);

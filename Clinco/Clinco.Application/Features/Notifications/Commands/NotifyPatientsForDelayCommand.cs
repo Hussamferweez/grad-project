@@ -68,7 +68,7 @@ public class NotifyPatientsForDelayCommandHandler
                 appointment.PatientId,
                 appointment.Patient.PhoneNumber,
                 "DelayAlert",
-                message));
+                message), ct);
         }
 
         return affected.Count;

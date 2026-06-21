@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+const todayLocalDateString = () => {
+  const today = new Date();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${today.getFullYear()}-${month}-${day}`;
+};
+
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
 export const loginSchema = z.object({
@@ -57,9 +64,8 @@ export const bookAppointmentSchema = z.object({
   dentistId: z.coerce.number().int().positive("Dentist ID is required"),
   serviceId: z.coerce.number().int().positive("Select a service"),
   date: z.string().min(1, "Date is required"),
-  time: z.string().min(1, "Time is required"),
   scheduleId: z.coerce.number().int().positive().optional()
-}).refine((v) => v.date >= new Date().toISOString().slice(0, 10), {
+}).refine((v) => v.date >= todayLocalDateString(), {
   message: "Date cannot be in the past",
   path: ["date"]
 });
@@ -73,7 +79,7 @@ export const createScheduleSchema = z
     endTime: z.string().min(1, "End time is required"),
     isAvailable: z.boolean()
   })
-  .refine((v) => v.date >= new Date().toISOString().slice(0, 10), {
+  .refine((v) => v.date >= todayLocalDateString(), {
     message: "Date cannot be in the past",
     path: ["date"]
   })

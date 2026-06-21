@@ -27,10 +27,7 @@ public static class Extensions
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddHostedService<DataSeeder>();
         services.AddScoped<ISmsGateway, HttpSmsGateway>();
-        services.AddMediatR(cfg =>
-            cfg.RegisterServicesFromAssemblies(
-                Assembly.GetExecutingAssembly(),
-                typeof(Clinco.Application.Extensions).Assembly));
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
         services.TryDecorate(typeof(ICommandHandler<>), typeof(LoggingCommandHandlerDecorator<>));
 
         return services;

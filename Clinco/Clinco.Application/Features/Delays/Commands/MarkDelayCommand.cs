@@ -2,6 +2,7 @@ using Application.Common.DTOs;
 using Application.Common.Exceptions;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Enums;
 using Domain.Events;
 using Domain.Interfaces;
 using Domain.Interfaces.Repositories;
@@ -61,6 +62,9 @@ public class MarkDelayCommandHandler : IRequestHandler<MarkDelayCommand, Appoint
         var target = await _appointments.GetByIdAsync(cmd.AppointmentId, ct)
             ?? throw new NotFoundException(nameof(Domain.Entities.Appointment), cmd.AppointmentId);
 
+        if (target.Status is AppointmentStatus.Cancelled or AppointmentStatus.Completed)
+            throw new ConflictException("Cannot delay a cancelled or completed appointment.");
+
         var dentistId = target.DentistId;
         var date = target.AppointmentDate;
         var fromTime = target.AppointmentTime;
@@ -68,7 +72,9 @@ public class MarkDelayCommandHandler : IRequestHandler<MarkDelayCommand, Appoint
         var appointments = await _appointments.GetByDentistAndDateAsync(dentistId, date, ct);
 
         var affectedAppointments = appointments
-            .Where(a => a.AppointmentTime >= fromTime)
+            .Where(a => a.AppointmentTime >= fromTime
+                && a.Status is not AppointmentStatus.Cancelled
+                && a.Status is not AppointmentStatus.Completed)
             .OrderBy(a => a.AppointmentTime)
             .ToList();
 
@@ -88,7 +94,7 @@ public class MarkDelayCommandHandler : IRequestHandler<MarkDelayCommand, Appoint
                 appt.Patient.PhoneNumber,
                 "Appointment Delayed",
                 $"Dear {appt.Patient.FullName}, your appointment has been delayed to {appt.AppointmentTime}"
-            ));
+            ), ct);
         }
 
         // Map directly from the already-tracked, already-updated instance — no reload

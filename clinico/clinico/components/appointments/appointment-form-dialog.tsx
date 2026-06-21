@@ -32,7 +32,7 @@ export function AppointmentFormDialog({ services, onCreated }: AppointmentFormDi
     formState: { errors, isSubmitting }
   } = useForm<BookAppointmentSchema>({
     resolver: zodResolver(bookAppointmentSchema),
-    defaultValues: { patientId: undefined, dentistId: undefined, serviceId: undefined, date: "", time: "" }
+    defaultValues: { patientId: undefined, dentistId: undefined, serviceId: undefined, date: "" }
   });
 
   // Load pickers; if the API rejects (e.g. permissions), fall back to manual ID entry.
@@ -54,12 +54,11 @@ export function AppointmentFormDialog({ services, onCreated }: AppointmentFormDi
         dentistId: data.dentistId,
         serviceId: data.serviceId,
         appointmentDate: data.date,
-        appointmentTime: data.time,
         createdBy: session.userId,
         scheduleId: data.scheduleId ?? null
       });
       toast.success("Appointment booked successfully");
-      reset({ patientId: undefined, dentistId: undefined, serviceId: undefined, date: "", time: "" });
+      reset({ patientId: undefined, dentistId: undefined, serviceId: undefined, date: "" });
       setOpen(false);
       onCreated?.();
     } catch (err) {
@@ -159,17 +158,10 @@ export function AppointmentFormDialog({ services, onCreated }: AppointmentFormDi
             {errors.serviceId && <p className="text-sm text-destructive">{errors.serviceId.message}</p>}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
-              <Input id="date" type="date" {...register("date")} />
-              {errors.date && <p className="text-sm text-destructive">{errors.date.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="time">Time</Label>
-              <Input id="time" type="time" {...register("time")} />
-              {errors.time && <p className="text-sm text-destructive">{errors.time.message}</p>}
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="date">Date</Label>
+            <Input id="date" type="date" {...register("date")} />
+            {errors.date && <p className="text-sm text-destructive">{errors.date.message}</p>}
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>

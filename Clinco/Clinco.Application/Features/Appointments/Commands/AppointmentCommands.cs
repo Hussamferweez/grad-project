@@ -18,7 +18,6 @@ public record BookAppointmentcmd(
     int PatientId,
     int DentistId,
     string AppointmentDate,
-    string? AppointmentTime,
     int ServiceId,
     int CreatedBy,
     int? ScheduleId = null) : IRequest<AppointmentDto>;
@@ -35,9 +34,6 @@ public class BookAppointmentcmdValidator : AbstractValidator<BookAppointmentcmd>
             .Must(d => DateOnly.TryParse(d, out var date) && date >= DateOnly.FromDateTime(DateTime.UtcNow.Date))
             .WithMessage("Appointment date must be today or in the future.");
 
-        RuleFor(x => x.AppointmentTime)
-            .Must(t => string.IsNullOrWhiteSpace(t) || TimeOnly.TryParse(t, out _))
-            .WithMessage("AppointmentTime must be in HH:mm format.");
     }
 }
 
@@ -100,30 +96,29 @@ public class BookAppointmentcmdHandler : IRequestHandler<BookAppointmentcmd, App
         if (!schedule.IsAvailable)
             throw new ConflictException("The selected dentist schedule is not available.");
 
-        var requestedSlot = string.IsNullOrWhiteSpace(cmd.AppointmentTime)
-            ? FindFirstAvailableSlot(schedule.StartTime, schedule.EndTime, service.ApproximateDurationMinutes, cmd.DentistId, date, ct)
-            : Task.FromResult<TimeOnly?>(TimeOnly.Parse(cmd.AppointmentTime));
+        var slotStart = schedule.StartTime;
+        TimeOnly? availableSlot = null;
 
-        var availableSlot = await requestedSlot;
+        while (slotStart.AddMinutes(service.ApproximateDurationMinutes) <= schedule.EndTime)
+        {
+            var hasConflict = await _appointments.HasConflictAsync(
+                cmd.DentistId,
+                date,
+                slotStart,
+                service.ApproximateDurationMinutes,
+                cancellationToken: ct);
+
+            if (!hasConflict)
+            {
+                availableSlot = slotStart;
+                break;
+            }
+
+            slotStart = slotStart.AddMinutes(15);
+        }
 
         if (availableSlot is null)
             throw new ConflictException("No available slots for this date.");
-
-        if (availableSlot.Value < schedule.StartTime ||
-            availableSlot.Value.AddMinutes(service.ApproximateDurationMinutes) > schedule.EndTime)
-        {
-            throw new ConflictException("Appointment time must be inside the dentist schedule.");
-        }
-
-        var hasConflict = await _appointments.HasConflictAsync(
-            cmd.DentistId,
-            date,
-            availableSlot.Value,
-            service.ApproximateDurationMinutes,
-            cancellationToken: ct);
-
-        if (hasConflict)
-            throw new ConflictException("The selected appointment time conflicts with another appointment.");
 
         var appointment = Appointment.Book(
             cmd.PatientId,
@@ -146,37 +141,9 @@ public class BookAppointmentcmdHandler : IRequestHandler<BookAppointmentcmd, App
             created.Patient.PhoneNumber,
             "Appointment Booked",
             $"Dear {created.Patient.FullName}, your appointment is at {availableSlot.Value}"
-        ));
+        ), ct);
 
         return _mapper.Map<AppointmentDto>(created);
-    }
-
-    private async Task<TimeOnly?> FindFirstAvailableSlot(
-        TimeOnly startTime,
-        TimeOnly endTime,
-        int durationMinutes,
-        int dentistId,
-        DateOnly date,
-        CancellationToken ct)
-    {
-        var slotStart = startTime;
-
-        while (slotStart.AddMinutes(durationMinutes) <= endTime)
-        {
-            var hasConflict = await _appointments.HasConflictAsync(
-                dentistId,
-                date,
-                slotStart,
-                durationMinutes,
-                cancellationToken: ct);
-
-            if (!hasConflict)
-                return slotStart;
-
-            slotStart = slotStart.AddMinutes(15);
-        }
-
-        return null;
     }
 }
 
@@ -213,28 +180,30 @@ public class ManageAppointmentcmdHandler : IRequestHandler<ManageAppointmentcmd,
         var appointment = await _appointments.GetByIdAsync(cmd.AppointmentId, ct)
             ?? throw new NotFoundException(nameof(Appointment), cmd.AppointmentId);
 
+        SmsNotificationRequestedEvent? smsEvent = null;
+
         switch (cmd.Action?.ToLowerInvariant())
         {
             case "confirm":
                 appointment.Confirm();
-                await _publisher.Publish(new SmsNotificationRequestedEvent(
+                smsEvent = new SmsNotificationRequestedEvent(
                     appointment.Id,
                     appointment.PatientId,
                     appointment.Patient.PhoneNumber,
-                    "Appoinment Confirmed",
-                    $"Dear {appointment.Patient.FullName}, your appointment has been confirmed for {appointment.AppointmentTime}"));
+                    "Appointment Confirmed",
+                    $"Dear {appointment.Patient.FullName}, your appointment has been confirmed for {appointment.AppointmentTime}");
                 break;
 
             case "reschedule":
                 if (cmd.NewDate is null || cmd.NewTime is null)
                     throw new ConflictException("NewDate and NewTime are required for reschedule.");
                 appointment.Reschedule(DateOnly.Parse(cmd.NewDate), TimeOnly.Parse(cmd.NewTime));
-                await _publisher.Publish(new SmsNotificationRequestedEvent(
+                smsEvent = new SmsNotificationRequestedEvent(
                     appointment.Id,
                     appointment.PatientId,
                     appointment.Patient.PhoneNumber,
-                    "Appoinment Rescheduled",
-                    $"Dear {appointment.Patient.FullName}, your appointment has been rescheduled for {appointment.AppointmentTime}"));
+                    "Appointment Rescheduled",
+                    $"Dear {appointment.Patient.FullName}, your appointment has been rescheduled for {appointment.AppointmentTime}");
                 break;
 
             case "complete":
@@ -247,6 +216,9 @@ public class ManageAppointmentcmdHandler : IRequestHandler<ManageAppointmentcmd,
 
         await _appointments.UpdateAsync(appointment, ct);
         await _uow.SaveChangesAsync(ct);
+
+        if (smsEvent is not null)
+            await _publisher.Publish(smsEvent, ct);
 
         return _mapper.Map<AppointmentDto>(appointment);
     }
@@ -293,8 +265,8 @@ public class CancelAppointmentcmdHandler : IRequestHandler<CancelAppointmentcmd>
             appointment.Id,
             appointment.PatientId,
             appointment.Patient.PhoneNumber,
-            "Appoinment Cancelled",
-            $"Dear {appointment.Patient.FullName}, your appointment has been cancelled."));
+            "Appointment Cancelled",
+            $"Dear {appointment.Patient.FullName}, your appointment has been cancelled."), ct);
     }
     private static string BuildMessage(string patientName, string delayMessage)
     => $"Dear {patientName}, your appointment has been scheduled for {delayMessage}";

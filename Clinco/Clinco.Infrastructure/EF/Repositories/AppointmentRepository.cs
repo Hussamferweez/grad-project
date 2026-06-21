@@ -91,6 +91,9 @@ internal sealed class AppointmentRepository(ClinicDbContext dbContext) : IAppoin
 
         return await dbContext.Appointments
             .AsNoTracking()
+            .Include(x => x.Patient)
+            .Include(x => x.Dentist)
+            .Include(x => x.Service)
             .Where(x => x.AppointmentDate == date && !x.IsDeleted && statusFilter.Contains(x.Status))
             .OrderBy(x => x.AppointmentTime)
             .ToListAsync(cancellationToken);
@@ -138,7 +141,7 @@ internal sealed class AppointmentRepository(ClinicDbContext dbContext) : IAppoin
 
         return await query.AnyAsync(x =>
                 x.AppointmentTime < endTime &&
-                x.AppointmentTime.AddMinutes(x.DurationMinutes + x.DelayDurationMinutes) > startTime,
+                x.AppointmentTime.AddMinutes(x.DurationMinutes) > startTime,
             cancellationToken);
     }
 }

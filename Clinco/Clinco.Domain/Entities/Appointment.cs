@@ -114,6 +114,7 @@ public class Appointment : BaseEntity
 
         ArgumentException.ThrowIfNullOrWhiteSpace(reason, nameof(reason));
 
+        AppointmentTime = AppointmentTime.AddMinutes(delayDurationMinutes);
         DelayReason = reason;
         DelayDurationMinutes = delayDurationMinutes;
         Status = AppointmentStatus.Delayed;
@@ -189,7 +190,7 @@ public class Appointment : BaseEntity
 
     /// <summary>Estimated end time accounting for any recorded delay.</summary>
     public TimeOnly EstimatedEndTime
-        => AppointmentTime.AddMinutes(DurationMinutes + DelayDurationMinutes);
+        => AppointmentTime.AddMinutes(DurationMinutes);
 
     public bool IsUpcoming
         => AppointmentDate >= DateOnly.FromDateTime(DateTime.UtcNow.Date)

@@ -183,7 +183,6 @@ export interface BookAppointmentPayload {
   patientId: number;
   dentistId: number;
   appointmentDate: string; // yyyy-MM-dd
-  appointmentTime: string; // HH:mm
   serviceId: number;
   createdBy: number;
   scheduleId?: number | null;
